@@ -7,16 +7,16 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	</head>
 		
-	<body>	
-		<a href="http://www.acrotech-elec.com"></a>
-		<center>
-			<h1><img src="./image/PhNetwork.png" alt="chip" width="64" height="64" "
-					style="./image/vertical-align:top"> Discovery</h1>
-		</center>			
+	<body style="text-align:center">		
+		<h1>
+			<img src="./image/PhNetwork.png" alt="chip" width="64" height="64" "
+			style="./image/vertical-align:top"> Discovery
+		</h1>			
 					
 		<center>			
 			<button id="linkBtn" onclick="linkWeb()" ><img id="image" width=32 height=32 src="./image/JamLink.png"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<button id="unLinkBtn" onclick="unlinkLine(linkIndex)"><img id="image" width=32 height=32 src="./image/BxUnlink.png"></button>					
+			<button id="unLinkBtn" onclick="unlinkLine(linkIndex)"><img id="image" width=32 height=32 src="./image/BxUnlink.png"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<button id="msgBtn" onclick="unlinkLine(linkIndex)"><img id="image" width=32 height=32 src="./image/BxUnlink.png"></button>			
 		</center>
 		
 		<center>
@@ -29,7 +29,6 @@
 		</center>
 		
 		<script>
-									
 			var c=document.getElementById("myCanvas"),
 				ctx=c.getContext("2d"),	
 				img=document.getElementById("imgGateway"),
@@ -37,33 +36,49 @@
 				img2=document.getElementById("imgDrt"),						
 				canvas = document.querySelector("canvas"),					
 			
-				gtw = {inx: img, x: 212, y: 52, w: 84, h: 84},				
-				iph = {inx: img1, x: 28, y: 52, w: 84, h: 84},
-				drt5 = {inx: img2, x: 46, y: 221, w: 48, h: 48},
-				drt1 = {inx: img2, x: 230, y: 221, w: 48, h: 48},
-				drt2 = {inx: img2, x: 230, y: 376, w: 48, h: 48},
-				drt3 = {inx: img2, x: 128, y: 507, w: 48, h: 48},
-				drt4 = {inx: img2, x: 332, y: 507, w: 48, h: 48},
+				// image position index
+				gtwp  = {x: 212, y:  52},
+				iphp  = {x: 28,  y:  52},
+				drt1p = {x: 230, y: 221},
+				drt2p = {x: 230, y: 376},
+				drt3p = {x: 128, y: 507},
+				drt4p = {x: 332, y: 507},
+				drt5p = {x:  46, y: 221},
 				
+				// image placed location and size
+				gtw =  {inx: img,  x:  gtwp.x, y:  gtwp.y, w: 84, h: 84},				
+				iph =  {inx: img1, x:  iphp.x, y:  iphp.y, w: 84, h: 84},
+				drt1 = {inx: img2, x: drt1p.x, y: drt1p.y, w: 48, h: 48},
+				drt2 = {inx: img2, x: drt2p.x, y: drt2p.y, w: 48, h: 48},
+				drt3 = {inx: img2, x: drt3p.x, y: drt3p.y, w: 48, h: 48},
+				drt4 = {inx: img2, x: drt4p.x, y: drt4p.y, w: 48, h: 48},
+				drt5 = {inx: img2, x: drt5p.x, y: drt5p.y, w: 48, h: 48},
+				
+				// initial image tooltip text
 				gtwtext = "gateway",
-				iphtext = "iphone",
-				drt1text = "drt1",
-				drt2text = "drt2",
-				drt3text = "drt3",
-				drt4text = "drt4",
-				drt5text = "drt5";
+				iphtext = "APP",
+				
+				drt1text = "Device Name:DRT1 <br>" + 
+							"Device UUID:<br>" + "&nbsp f15e5f6e-909f-<br>" +
+							"&nbsp 4a07-9e78-<br>" + "&nbsp d66e7a2b55d6 <br>" + 
+							"Device Location:<br>" + "&nbsp HLTPE-12RDP-33837992",
+							
+				drt2text = "DRT2",
+				drt3text = "DRT3",
+				drt4text = "DRT4",
+				drt5text = "DRT5";	
 				
 			// create a tool-tip instance:
-				tgtw = new ToolTip(canvas, gtw, gtwtext, 50, 1000),
-				tiph = new ToolTip(canvas, iph, iphtext, 50, 1000),
-				tdrt1 = new ToolTip(canvas, drt1, drt1text, 50, 1000),
-				tdrt2 = new ToolTip(canvas, drt2, drt2text, 50, 1000),
-				tdrt3 = new ToolTip(canvas, drt3, drt3text, 50, 1000),
-				tdrt4 = new ToolTip(canvas, drt4, drt4text, 50, 1000),
-				tiph5 = new ToolTip(canvas, drt5, drt5text, 50, 1000);
+				tgtw = new ToolTip(canvas, gtw, gtwtext, 50, 5000),
+				tiph = new ToolTip(canvas, iph, iphtext, 50, 5000),
+				tdrt1 = new ToolTip(canvas, drt1, drt1text, 180, 5000),
+				tdrt2 = new ToolTip(canvas, drt2, drt2text, 200, 5000),
+				tdrt3 = new ToolTip(canvas, drt3, drt3text, 50, 5000),
+				tdrt4 = new ToolTip(canvas, drt4, drt4text, 50, 5000),
+				tiph5 = new ToolTip(canvas, drt5, drt5text, 50, 5000);
 			
 			// The Tool-Tip instance:
-			function ToolTip(canvas, iph, text, width, timeout) {
+			function ToolTip(canvas, region, text, width, timeout) {
 
 			  var me = this,                                // self-reference for event handlers
 				  div = document.createElement("div"),      // the tool-tip div
@@ -71,7 +86,8 @@
 				  visible = false;                          // current status
 			  
 			  // set some initial styles, can be replaced by class-name etc.
-			  div.style.cssText = "position:fixed;padding:7px;color:white;background:blue;pointer-events:none;width:" + width + "px";
+			  div.style.cssText = 
+					"font-family:monospace;position:fixed;text-align:left;padding:7px;color:white;background:blue;pointer-events:none;width:" + width + "px";
 			  div.innerHTML = text;
 			  
 			  // show the tool-tip
@@ -91,15 +107,20 @@
 			  }
 
 			  // check mouse position, add limits as wanted... just for example:
-			  function check(e) {
+			  function check(e) {				
 				var pos = getPos(e),
 					posAbs = {x: e.clientX, y: e.clientY};  // div is fixed, so use clientX/Y
 				if (!visible &&
-					pos.x >= iph.x && pos.x < iph.x + iph.w &&
-					pos.y >= iph.y && pos.y < iph.y + iph.h) {
-				  me.show(posAbs);                          // show tool-tip at this pos
+							pos.x >= region.x && pos.x < region.x + region.w &&
+							pos.y >= region.y && pos.y < region.y + region.h) {	
+					div.innerHTML = updateDrtData(region);
+					//div.innerHTML = region.x + ":" + region.y;
+					me.show(posAbs);          				// show tool-tip at this pos
 				}
-				else setDivPos(posAbs);                     // otherwise, update position
+				else {
+					setDivPos(posAbs);                     // otherwise, update position
+					hide();
+				}
 			  }
 			  
 			  // get mouse position relative to canvas
@@ -120,7 +141,7 @@
 			  }
 			  
 			  // we need to use shared event handlers:
-			  canvas.addEventListener("mousemove", check);
+			  <!--canvas.addEventListener("mousemove", check);
 			  canvas.addEventListener("click", check);			 
 			}	
 			
@@ -134,6 +155,17 @@
 			  ctx.drawImage(drt4.inx, drt4.x, drt4.y, drt4.w, drt4.h);
 			  
 			});					
+			
+			function updateDrtData(pos) {
+				if(pos.x==gtwp.x && pos.y==gtwp.y) return gtwtext;				
+				else if(pos.x==iphp.x && pos.y==iphp.y) return iphtext;
+				else if(pos.x==drt1p.x && pos.y==drt1p.y) return drt1text;
+				else if(pos.x==drt2p.x && pos.y==drt2p.y) return drt2text;
+				else if(pos.x==drt3p.x && pos.y==drt3p.y) return drt3text;
+				else if(pos.x==drt4p.x && pos.y==drt4p.y) return drt4text;
+				else if(pos.x==drt5p.x && pos.y==drt1p.y) return drt5text;
+				else return "not available";
+			}
 			
 			function clearLine(hx,hy,ex,ey) {		
 				<!-- setLineDash([x,y]) x=segment px, y=gap px -->		
@@ -218,8 +250,8 @@
 			}			
 			
 			function linkWeb() {
+				gtwtext = "1234";
 				
-				window.open("https://www.acrotech-elec.com");
 			}
 			
 			linkLine(0);
@@ -229,7 +261,7 @@
 			linkLine(4);
 			linkLine(5);
 			
-			putText("APP",57,95,"12pt NSimSun")
+			putText("APP",57,95,"13pt NSimSun")
 			putText("Field Gateway",195,45,"13pt NSimSun")
 			putText("DRT 5",85,220,"11pt NSimSun")
 			putText("DRT 1",268,220,"11pt NSimSun")
