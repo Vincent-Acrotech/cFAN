@@ -60,22 +60,37 @@
 				
 				drt1text = "Device Name:DRT1 <br>" + 
 							"Device UUID:<br>" + "&nbsp f15e5f6e-909f-<br>" +
-							"&nbsp 4a07-9e78-<br>" + "&nbsp d66e7a2b55d6 <br>" + 
+							"&nbsp 4a07-9e78-<br>" + "&nbsp d66e7a2b55d6<br>" + 
+							"Device Location:<br>" + "&nbsp HLTPE-12RDP-33837992",
+				
+				drt2text = "Device Name:DRT2 <br>" + 
+							"Device UUID:<br>" + "&nbsp ec7d9aa9-e5ee-<br>" +
+							"&nbsp 4ca9-9dc6-<br>" + "&nbsp 7310fadf3937<br>" + 
+							"Device Location:<br>" + "&nbsp HLTPE-12RDP-33837992",	
+							
+				drt3text = "Device Name:DRT3 <br>" + 
+							"Device UUID:<br>" + "&nbsp 5782dfc5-b976-<br>" +
+							"&nbsp 4f36-b56b-<br>" + "&nbsp 402c8e2a7fdf<br>" + 
 							"Device Location:<br>" + "&nbsp HLTPE-12RDP-33837992",
 							
-				drt2text = "DRT2",
-				drt3text = "DRT3",
-				drt4text = "DRT4",
-				drt5text = "DRT5";	
-				
+				drt4text = "Device Name:DRT4 <br>" + 
+							"Device UUID:<br>" + "&nbsp bb57bed2-37b9-<br>" +
+							"&nbsp 4de0-96fc-<br>" + "&nbsp 23e1932097a4<br>" + 
+							"Device Location:<br>" + "&nbsp HLTPE-12RDP-33837992",
+							
+				drt5text = "Device Name:DRT5 <br>" + 
+							"Device UUID:<br>" + "&nbsp 44497e1b-cb02-<br>" +
+							"&nbsp 4a0d-aefa-<br>" + "&nbsp cad6ba1d1643<br>" + 
+							"Device Location:<br>" + "&nbsp HLTPE-12RDP-33837992",	
+	
 			// create a tool-tip instance:
 				tgtw = new ToolTip(canvas, gtw, gtwtext, 50, 5000),
 				tiph = new ToolTip(canvas, iph, iphtext, 50, 5000),
 				tdrt1 = new ToolTip(canvas, drt1, drt1text, 180, 5000),
-				tdrt2 = new ToolTip(canvas, drt2, drt2text, 200, 5000),
-				tdrt3 = new ToolTip(canvas, drt3, drt3text, 50, 5000),
-				tdrt4 = new ToolTip(canvas, drt4, drt4text, 50, 5000),
-				tiph5 = new ToolTip(canvas, drt5, drt5text, 50, 5000);
+				tdrt2 = new ToolTip(canvas, drt2, drt2text, 180, 5000),
+				tdrt3 = new ToolTip(canvas, drt3, drt3text, 180, 5000),
+				tdrt4 = new ToolTip(canvas, drt4, drt4text, 180, 5000),
+				tiph5 = new ToolTip(canvas, drt5, drt5text, 180, 5000);
 			
 			// The Tool-Tip instance:
 			function ToolTip(canvas, region, text, width, timeout) {
