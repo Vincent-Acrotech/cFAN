@@ -155,7 +155,9 @@
 							pos.x >= region.x && pos.x < region.x + region.w &&
 							pos.y >= region.y && pos.y < region.y + region.h) {	
 					div.innerHTML = updateDrtData(region);
-					//div.innerHTML = region.x + ":" + region.y;
+					if(region.x==drt4p.x && region.y==drt4p.y) {
+						posAbs = {x: e.clientX-70, y: e.clientY}; 
+					}
 					me.show(posAbs);          				// show tool-tip at this pos
 				}
 				else {
