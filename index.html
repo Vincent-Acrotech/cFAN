@@ -4,7 +4,7 @@
 	<head> 
 		<meta charset="utf-8">
 		<title>Discovery for cFAN</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">					
 	</head>
 		
 	<body style="text-align:center">		
@@ -14,48 +14,76 @@
 		</h1>			
 					
 		<center>			
-			<button id="linkBtn" onclick="linkWeb()" ><img id="image" width=32 height=32 src="./image/JamLink.png"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<button id="unLinkBtn" onclick="unlinkLine(linkIndex)"><img id="image" width=32 height=32 src="./image/BxUnlink.png"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;			
+			<button id="linkBtn" onclick="linkLine(0)"><img id="image" width=32 height=32 src="./image/JamLink.png"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<button id="unLinkBtn" onclick="unlinkLine(0)"><img id="image" width=32 height=32 src="./image/BxUnlink.png"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;			
 		</center>
 		
 		<center>
-			<canvas id="myCanvas" width="450" height="710" 
+			<canvas id="myCanvas" width="450" height="650" 
 				style="border:1px solid #d3d3d3;background:#ffffff">
 				<img src="./image/voip-gateway-128.png" alt="gateway" width=128 height=128 id="imgGateway">
-				<img src="./image/IconParkOutlineCpu.png" alt="chip" width=128 height=128 id="imgDrt">
-				<img src="./image/mobile-phone-8-128.png" alt="phone" width=128px height=128px id="imgPhone">			
+				<img src="./image/IconParkOutlineCpu.png" alt="chip" width=128 height=128 id="imgDrt">				
 			</canvas>				
 		</center>
 		
-		<script>
+		<script>			
+			
 			var c=document.getElementById("myCanvas"),
 				ctx=c.getContext("2d"),	
-				img=document.getElementById("imgGateway"),
-				img1=document.getElementById("imgPhone"),	
+				img=document.getElementById("imgGateway"),	
 				img2=document.getElementById("imgDrt"),						
 				canvas = document.querySelector("canvas"),					
-			
+							
 				// image position index
-				gtwp  = {x: 212, y:  52},
-				iphp  = {x: 28,  y:  52},
-				drt1p = {x: 230, y: 221},
-				drt2p = {x: 230, y: 376},
-				drt3p = {x: 128, y: 507},
-				drt4p = {x: 332, y: 507},
-				drt5p = {x:  46, y: 221},
+				gtwp  = {x: 182, y:  52, w: 84, h: 84},				
+				drt1p = {x: 200, y: 221, w: 48, h: 48},
+				drt2p = {x: 200, y: 376, w: 48, h: 48},
+				drt3p = {x: 98,  y: 507, w: 48, h: 48},
+				drt4p = {x: 302, y: 507, w: 48, h: 48},
+				drt5p = {x: 200, y: 507, w: 48, h: 48},
 				
 				// image placed location and size
-				gtw =  {inx: img,  x:  gtwp.x, y:  gtwp.y, w: 84, h: 84},				
-				iph =  {inx: img1, x:  iphp.x, y:  iphp.y, w: 84, h: 84},
-				drt1 = {inx: img2, x: drt1p.x, y: drt1p.y, w: 48, h: 48},
-				drt2 = {inx: img2, x: drt2p.x, y: drt2p.y, w: 48, h: 48},
-				drt3 = {inx: img2, x: drt3p.x, y: drt3p.y, w: 48, h: 48},
-				drt4 = {inx: img2, x: drt4p.x, y: drt4p.y, w: 48, h: 48},
-				drt5 = {inx: img2, x: drt5p.x, y: drt5p.y, w: 48, h: 48},
+				gtw =  {inx: img,  x:  gtwp.x, y:  gtwp.y, w: gtwp.w,  h: gtwp.h},								
+				drt1 = {inx: img2, x: drt1p.x, y: drt1p.y, w: drt1p.w, h: drt1p.h},
+				drt2 = {inx: img2, x: drt2p.x, y: drt2p.y, w: drt2p.w, h: drt2p.h},
+				drt3 = {inx: img2, x: drt3p.x, y: drt3p.y, w: drt3p.w, h: drt3p.h},
+				drt4 = {inx: img2, x: drt4p.x, y: drt4p.y, w: drt4p.w, h: drt4p.h},
+				drt5 = {inx: img2, x: drt5p.x, y: drt5p.y, w: drt5p.w, h: drt5p.h},
+				
+				// connection line of start and end
+				gtwBottomP  = {x: gtwp.x+(gtwp.w/2),   y: (gtw.y+gtw.h)},
+				drt1TopP    = {x: drt1p.x+(drt1p.w/2), y:  drt1p.y},
+				drt1BottomP = {x: drt1p.x+(drt1p.w/2), y: (drt1p.y+drt1p.h)},
+				drt2TopP    = {x: drt2p.x+(drt2p.w/2), y: (drt2p.y)},
+				drt2BottomP = {x: drt2p.x+(drt2p.w/2), y: (drt2p.y+drt2p.h)},
+				drt3TopP    = {x: drt3p.x+(drt3p.w/2), y:  drt3p.y},
+				drt4TopP    = {x: drt4p.x+(drt4p.w/2), y:  drt4p.y},
+				drt5TopP    = {x: drt5p.x+(drt5p.w/2), y:  drt5p.y},
+				
+				// image text
+				imgTextFont = "12pt NSimSun",
+				gtwText     = "Field Gateway",
+				drt1Text1   = "Root",
+				drt1Text2   = "DRT 1",
+				drt2Text1   = "Local Base",
+				drt2Text2   = "DRT 2",
+				drt3Text    = "DRT 3",
+				drt4Text    = "DRT 4",
+				drt5Text    = "DRT 5",
+				
+				// image text position
+				gtwTextP   = {text: gtwText,    x: gtwp.x-15,  y: gtwp.y-7},
+				drt1Text1P = {text: drt1Text1,  x: drt1p.x+38, y: drt1p.y-18},
+				drt1Text2P = {text: drt1Text2,  x: drt1p.x+38, y: drt1p.y-1},
+				drt2Text1P = {text: drt2Text1,  x: drt2p.x+38, y: drt2p.y-18},
+				drt2Text2P = {text: drt2Text2,  x: drt2p.x+38, y: drt2p.y-1},
+				drt3TextP  = {text: drt3Text,   x: drt3p.x+3,  y: drt3p.y+66},
+				drt4TextP  = {text: drt4Text,   x: drt4p.x+3,  y: drt4p.y+66},
+				drt5TextP  = {text: drt5Text,   x: drt5p.x+3,  y: drt3p.y+66},
+				
 				
 				// initial image tooltip text
-				gtwtext = "Field Gateway",
-				iphtext = "Application",
+				gtwtext  = "Field Gateway",
 				
 				drt1text = "Device Name:DRT1 <br>" + 
 							"Device UUID:<br>" + "&nbsp f15e5f6e-909f-<br>" +
@@ -83,8 +111,7 @@
 							"Device Location:<br>" + "&nbsp HLTPE-05FNC-42252766",	
 	
 			// create a tool-tip instance:
-				tgtw = new ToolTip(canvas, gtw, gtwtext, 95, 5000),
-				tiph = new ToolTip(canvas, iph, iphtext, 80, 5000),
+				tgtw = new ToolTip(canvas, gtw, gtwtext, 95, 5000),				
 				tdrt1 = new ToolTip(canvas, drt1, drt1text, 160, 5000),
 				tdrt2 = new ToolTip(canvas, drt2, drt2text, 160, 5000),
 				tdrt3 = new ToolTip(canvas, drt3, drt3text, 160, 5000),
@@ -160,130 +187,107 @@
 			}	
 			
 			img.addEventListener("load", (e) => {			
-			  ctx.drawImage(gtw.inx, gtw.x, gtw.y, gtw.w, gtw.h);	
-			  ctx.drawImage(iph.inx, iph.x, iph.y, iph.w, iph.h);	
-			  ctx.drawImage(drt5.inx, drt5.x, drt5.y, drt5.w, drt5.h);	
+			  ctx.drawImage(gtw.inx, gtw.x, gtw.y, gtw.w, gtw.h);				 
 			  ctx.drawImage(drt1.inx, drt1.x, drt1.y, drt1.w, drt1.h);	
 			  ctx.drawImage(drt2.inx, drt2.x, drt2.y, drt2.w, drt2.h);	
 			  ctx.drawImage(drt3.inx, drt3.x, drt3.y, drt3.w, drt3.h);	
 			  ctx.drawImage(drt4.inx, drt4.x, drt4.y, drt4.w, drt4.h);
-			  
+			  ctx.drawImage(drt5.inx, drt5.x, drt5.y, drt5.w, drt5.h);	
 			});					
 			
 			function updateDrtData(pos) {
 				if(pos.x==gtwp.x && pos.y==gtwp.y) return gtwtext;				
-				else if(pos.x==iphp.x && pos.y==iphp.y) return iphtext;
 				else if(pos.x==drt1p.x && pos.y==drt1p.y) return drt1text;
 				else if(pos.x==drt2p.x && pos.y==drt2p.y) return drt2text;
 				else if(pos.x==drt3p.x && pos.y==drt3p.y) return drt3text;
 				else if(pos.x==drt4p.x && pos.y==drt4p.y) return drt4text;
-				else if(pos.x==drt5p.x && pos.y==drt1p.y) return drt5text;
+				else if(pos.x==drt5p.x && pos.y==drt5p.y) return drt5text;
 				else return "not available";
 			}
 			
-			function clearLine(hx,hy,ex,ey) {		
+			function clearLine(start,end) {		
 				<!-- setLineDash([x,y]) x=segment px, y=gap px -->		
 				ctx.strokeStyle = '#ffffff';
-				ctx.lineWidth="5";
+				ctx.lineWidth="8";
 				ctx.setLineDash([3,3]);	
 				ctx.beginPath();   
-				ctx.moveTo(hx,hy);  
-				ctx.lineTo(ex,ey);   		
+				ctx.moveTo(start.x,start.y);  
+				ctx.lineTo(end.x,end.y);   		
 				ctx.stroke();			
 			}
 			
-			function drawLine(hx,hy,ex,ey) {						
-				clearLine(hx,hy,ex,ey);				
+			function drawLine(start,end) {						
+				clearLine(start,end);				
 				ctx.strokeStyle = '#0000ff';
 				ctx.lineWidth="1";
 				ctx.setLineDash([3,3]);	
 				ctx.beginPath();   
-				ctx.moveTo(hx,hy);  
-				ctx.lineTo(ex,ey);   		
+				ctx.moveTo(start.x,start.y);  
+				ctx.lineTo(end.x,end.y);   		
 				ctx.stroke();	
-			}
+			}						
 			
-			function textStyle() {
-				ctx.font = "20pt NSimSun";
-				ctx.fillStyle = '#0000ff';
-				ctx.fillText("APP", 50, 50);	
-			}
-			
-			function putText(text,x,y,txtFont) {
+			function putText(imgTextP,txtFont) {
 				ctx.font = txtFont;
 				ctx.fillStyle = '#000000';
-				ctx.fillText(text, x, y);
+				ctx.fillText(imgTextP.text, imgTextP.x, imgTextP.y);
 			}
 
 			function linkLine(lineInx) {
-				switch (lineInx) {
+				switch (lineInx) {					
 					case 0:
-						drawLine(70,138,70,221);
+						drawLine(gtwBottomP,drt1TopP);
 						break;
 					case 1:
-						drawLine(94,245,230,245);
+						drawLine(drt1BottomP,drt2TopP);
 						break;
 					case 2:
-						drawLine(254,136,254,221);
+						drawLine(drt2BottomP,drt3TopP);
 						break;
 					case 3:
-						drawLine(254,269,254,376);
+						drawLine(drt2BottomP,drt4TopP);
 						break;
 					case 4:
-						drawLine(254,426,150,507);
-						break;
-					case 5:
-						drawLine(254,426,355,507);
+						drawLine(drt2BottomP,drt5TopP);
 						break;
 				}
 			
 			}
 			
 			function unlinkLine(lineInx) {
-				switch (lineInx) {
+				switch (lineInx) {					
 					case 0:
-						clearLine(70,138,70,221);
+						clearLine(gtwBottomP,drt1TopP);
 						break;
 					case 1:
-						clearLine(94,245,230,245);
+						clearLine(drt1BottomP,drt2TopP);
 						break;
 					case 2:
-						clearLine(254,136,254,221);
+						clearLine(drt2BottomP,drt3TopP);
 						break;
 					case 3:
-						clearLine(254,269,254,376);
+						clearLine(drt2BottomP,drt4TopP);
 						break;
 					case 4:
-						clearLine(254,426,150,507);
-						break;
-					case 5:
-						clearLine(254,426,355,507);
-						break;
+						clearLine(drt2BottomP,drt5TopP);
+						break;				
 				}
 			
-			}			
+			}									
 			
-			function linkWeb() {
-				
-				
+			putText(gtwTextP,imgTextFont);
+			putText(drt1Text1P,imgTextFont);
+			putText(drt1Text2P,imgTextFont);
+			putText(drt2Text1P,imgTextFont);
+			putText(drt2Text2P,imgTextFont);
+			putText(drt3TextP,imgTextFont);
+			putText(drt4TextP,imgTextFont);
+			putText(drt5TextP,imgTextFont);
+			
+			for(let i = 0; i < 5; i++) {
+				linkLine(i);
 			}
 			
-			linkLine(0);
-			linkLine(1);
-			linkLine(2);
-			linkLine(3);
-			linkLine(4);
-			linkLine(5);
-			
-			putText("APP",57,95,"13pt NSimSun")
-			putText("Field Gateway",195,45,"13pt NSimSun")
-			putText("DRT 5",85,220,"11pt NSimSun")
-			putText("DRT 1",268,220,"11pt NSimSun")
-			putText("Root",268,203,"11pt NSimSun")
-			putText("DRT 2",268,375,"11pt NSimSun")
-			putText("Local Base",268,358,"11pt NSimSun")
-			putText("DRT 3",131,573,"11pt NSimSun")
-			putText("DRT 4",335,573,"11pt NSimSun")
 		</script>
 				
 	</body>
