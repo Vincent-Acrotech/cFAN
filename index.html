@@ -14,8 +14,8 @@
 		</h1>			
 					
 		<center>			
-			<button id="linkBtn" onclick="redrawImgLine();"><img id="image" width=32 height=32 src="./image/JamLink.png"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<button id="unLinkBtn" onclick="drawImgThick(0)"><img id="image" width=32 height=32 src="./image/BxUnlink.png"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;			
+			<button id="linkBtn" onclick="linkAll();"><img id="image" width=32 height=32 src="./image/JamLink.png"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<button id="unLinkBtn" onclick="unlinkAll()"><img id="image" width=32 height=32 src="./image/BxUnlink.png"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;			
 		</center>
 		
 		<center>
@@ -35,23 +35,31 @@
 		
 		<script>			
 			// link status of devices
-			var gtwLink   = {linkNode: "drt1", linkStatus: false,  lineInx: 0,  imgInxS:0, imgInxE: 1},
+			var gtwLink   = {linkNode: "drt1", linkStatus: true,  lineInx: 0,  imgInxS:0, imgInxE: 1},
 				drt1Link  = {linkNode: "drt2", linkStatus: true,  lineInx: 1,  imgInxS:1, imgInxE: 2},
-				drt2Link1 = {linkNode: "drt3", linkStatus: false, lineInx: 2, imgInxS:2, imgInxE: 3},
-				drt2Link2 = {linkNode: "drt4", linkStatus: false, lineInx: 3, imgInxS:2, imgInxE: 4},
-				drt2Link3 = {linkNode: "drt5", linkStatus: false, lineInx: 4, imgInxS:2, imgInxE: 5};
+				drt2Link1 = {linkNode: "drt3", linkStatus: true, lineInx: 2, imgInxS:2, imgInxE: 3},
+				drt2Link2 = {linkNode: "drt4", linkStatus: true, lineInx: 3, imgInxS:2, imgInxE: 4},
+				drt2Link3 = {linkNode: "drt5", linkStatus: true, lineInx: 4, imgInxS:2, imgInxE: 5};
 			
-			// selected status of DRTs
-			var gtwOnline  = false;
+			// linked status of devices
+			var gtwOnline  = false
 				drt1Online = false,
 				drt2Online = false,
 				drt3Online = false,
 				drt4Online = false,
 				drt5Online = false;
 				
+			// selected image for put conn or disconn image
+			var gtwSelected  = {selected: false, conn: false},
+				drt1Selected = {selected: false, conn: false},
+				drt2Selected = {selected: false, conn: false},
+				drt3Selected = {selected: false, conn: false},
+				drt4Selected = {selected: false, conn: false},
+				drt5Selected = {selected: false, conn: false};
+				
 			var c=document.getElementById("myCanvas"),
-				ctx=c.getContext("2d"),	
-				img=document.getElementById("imgGatewayThin"),	
+				ctx =c.getContext("2d"),	
+				img =document.getElementById("imgGatewayThin"),	
 				img1=document.getElementById("imgGatewayThick"),
 				img5=document.getElementById("imgGatewayClr"),				
 				img2=document.getElementById("imgDrtThin"),	
@@ -178,7 +186,7 @@
 							"Device Location:<br>" + "&nbsp HLTPE-05FNC-42252766",	
 	
 			// create a tool-tip instance:
-				tgtw  = new ToolTip(canvas, gtwThin,  gtwtext,   95, 5000),				
+				tgtw  = new ToolTip(canvas, gtwThin,  gtwtext,  100, 5000),				
 				tdrt1 = new ToolTip(canvas, drt1Thin, drt1text, 160, 5000),
 				tdrt2 = new ToolTip(canvas, drt2Thin, drt2text, 160, 5000),
 				tdrt3 = new ToolTip(canvas, drt3Thin, drt3text, 160, 5000),
@@ -188,56 +196,61 @@
 			// The Tool-Tip instance:
 			function ToolTip(canvas, region, text, width, timeout) {
 
-			  var me = this,                                // self-reference for event handlers
-				  div = document.createElement("div"),      // the tool-tip div
-				  parent = canvas.parentNode,               // parent node for canvas
-				  visible = false;                          // current status
+				var me = this,                                // self-reference for event handlers
+				    div = document.createElement("div"),      // the tool-tip div
+				    parent = canvas.parentNode,               // parent node for canvas
+				    visible = false;                          // current status
 			  
-			  // set some initial styles, can be replaced by class-name etc.
-			  div.style.cssText = 
+				// set some initial styles, can be replaced by class-name etc.
+				div.style.cssText = 
 					"font-family:monospace;position:fixed;text-align:left;padding:7px;color:white;background:blue;pointer-events:none;width:" + width + "px";
-			  div.innerHTML = text;
+				div.innerHTML = text;
 			  
-			  // show the tool-tip
-			  this.show = function(pos) {
-				if (!visible) {                             // ignore if already shown (or reset time)
-				  visible = true;                           // lock so it's only shown once
-				  setDivPos(pos);                           // set position
-				  parent.appendChild(div);                  // add to parent of canvas
-				  setTimeout(hide, timeout);                // timeout for hide
+				// show the tool-tip
+				this.show = function(pos) {
+					if (!visible) {                             // ignore if already shown (or reset time)
+						visible = true;                           // lock so it's only shown once
+						setDivPos(pos);                           // set position
+						parent.appendChild(div);                  // add to parent of canvas
+						setTimeout(hide, timeout);                // timeout for hide
+					}
 				}
-			  }
 			  
-			  // hide the tool-tip
-			  function hide() {
-				visible = false;                            // hide it after timeout
-				parent.removeChild(div);                    // remove from DOM
-			  }
+				// hide the tool-tip
+				function hide() {
+					visible = false;                            // hide it after timeout
+					parent.removeChild(div);                    // remove from DOM
+				}
 
-			  // check mouse position, add limits as wanted... just for example:
-			  function check(e) {				
-				var pos = getPos(e),
-					posAbs = {x: e.clientX-80, y: e.clientY};  // div is fixed, so use clientX/Y
-				if (!visible &&
-							pos.x >= region.x && pos.x < region.x + region.w &&
-							pos.y >= region.y && pos.y < region.y + region.h) {	
-					div.innerHTML = updateDrtData(region);								
-					me.show(posAbs);          				// show tool-tip at this pos
-				}
-				else {
-					setDivPos(posAbs);                     // otherwise, update position
-					hide();
-					var index = pos2Index(region);
-					var flag = getDvcOnlineStatus(region);
-					drawImgBlank(index);
-					if(flag) {
-						drawImgDisconn(index);
+				// check mouse position, add limits as wanted... just for example:
+				function check(e) {				
+					var pos = getPos(e),
+					    posAbs = {x: e.clientX-80, y: e.clientY};  // div is fixed, so use clientX/Y
+					if (!visible &&
+						pos.x >= region.x && pos.x < region.x + region.w &&
+						pos.y >= region.y && pos.y < region.y + region.h) {	
+						div.innerHTML = updateDrtData(region);								
+						me.show(posAbs);          				// show tool-tip at this pos
 					}
 					else {
-						drawImgConn(index);
+						setDivPos(posAbs);                     // otherwise, update position
+						hide();
+						var index = pos2Index(region);
+						var linkStatus = getDvcOnlineStatus(index);
+						var selFlag = getSelImgSelected(index);
+						if(!selFlag) {
+							if(linkStatus) {
+								clrSelImgConn(index);
+							}
+							else {
+								setSelImgConn(index);
+							}
+							setSelImgSelected(index);
+							rebuildConn();
+							clrSelImgSelected(index);
+						}
 					}
 				}
-			  }
 			  
 			  // get mouse position relative to canvas
 			  function getPos(e) {
@@ -262,6 +275,7 @@
 			}	
 					
 			function drawImgThin(imgInx) {
+				drawImgBlank(imgInx);
 				switch(imgInx) {
 					case 0:
 						ctx.drawImage(gtwThin.inx, gtwThin.x, gtwThin.y, gtwThin.w, gtwThin.h);
@@ -285,6 +299,7 @@
 			}
 			
 			function drawImgThick(imgInx) {
+				drawImgBlank(imgInx);
 				switch(imgInx) {
 					case 0:								
 						ctx.drawImage(gtwThick.inx, gtwThick.x, gtwThick.y, gtwThick.w, gtwThick.h);
@@ -308,6 +323,7 @@
 			}
 
 			function drawImgConn(imgInx) {
+				drawImgBlank(imgInx);
 				switch(imgInx) {
 					case 0:								
 						ctx.drawImage(gtwConn.inx, gtwConn.x, gtwConn.y, gtwConn.w, gtwConn.h);
@@ -331,6 +347,7 @@
 			}
 			
 			function drawImgDisconn(imgInx) {
+				drawImgBlank(imgInx);
 				switch(imgInx) {
 					case 0:								
 						ctx.drawImage(gtwDisconn.inx, gtwDisconn.x, gtwDisconn.y, gtwDisconn.w, gtwDisconn.h);
@@ -354,6 +371,7 @@
 			}
 			
 			function drawImgClr(imgInx) {
+				drawImgBlank(imgInx);
 				switch(imgInx) {
 					case 0:	
 						ctx.drawImage(gtwClr.inx, gtwClr.x, gtwClr.y, gtwClr.w, gtwClr.h);					
@@ -399,6 +417,197 @@
 				}
 			}
 			
+			// true = connected image
+			function setSelImgConn(index) {
+				switch (index) {
+					case 0:
+						gtwSelected.conn = true;
+						break;
+					case 1:
+						drt1Selected.conn = true;
+						break;
+					case 2:
+						drt2Selected.conn = true;
+						break;
+					case 3:
+						drt3Selected.conn = true;
+						break;
+					case 4:
+						drt4Selected.conn = true;
+						break;
+					case 5:
+						drt5Selected.conn = true;
+						break;
+				}
+			}
+			
+			// false = diconnected image
+			function clrSelImgConn(index) {
+				switch (index) {
+					case 0:
+						gtwSelected.conn = false;
+						break;
+					case 1:
+						drt1Selected.conn = false;
+						break;
+					case 2:
+						drt2Selected.conn = false;
+						break;
+					case 3:
+						drt3Selected.conn = false;
+						break;
+					case 4:
+						drt4Selected.conn = false;
+						break;
+					case 5:
+						drt5Selected.conn = false;
+						break;
+				}
+			}
+			
+			function setSelImgSelected(index) {
+				switch (index) {
+					case 0:
+						gtwSelected.selected = true;
+						break;
+					case 1:
+						drt1Selected.selected = true;
+						break;
+					case 2:
+						drt2Selected.selected = true;
+						break;
+					case 3:
+						drt3Selected.selected = true;
+						break;
+					case 4:
+						drt4Selected.selected = true;
+						break;
+					case 5:
+						drt5Selected.selected = true;
+						break;
+				}
+			}
+			
+			function clrSelImgSelected(index) {
+				switch (index) {
+					case 0:
+						gtwSelected.selected = false;
+						break;
+					case 1:
+						drt1Selected.selected = false;
+						break;
+					case 2:
+						drt2Selected.selected = false;
+						break;
+					case 3:
+						drt3Selected.selected = false;
+						break;
+					case 4:
+						drt4Selected.selected = false;
+						break;
+					case 5:
+						drt5Selected.selected = false;
+						break;
+				}
+			}
+
+			function getSelImgSelected(index) {
+				switch (index) {
+					case 0:
+						return gtwSelected.selected;
+					case 1:
+						return drt1Selected.selected;						
+					case 2:
+						return drt2Selected.selected;
+					case 3:
+						return drt3Selected.selected;
+					case 4:
+						return drt4Selected.selected;
+					case 5:
+						return drt5Selected.selected;
+				}
+			}
+			
+			function getSelImgConn(index) {
+				switch (index) {
+					case 0:
+						return gtwSelected.conn;
+					case 1:
+						return drt1Selected.conn;					
+					case 2:
+						return drt2Selected.conn;
+					case 3:
+						return drt3Selected.conn;
+					case 4:
+						return drt4Selected.conn;
+					case 5:
+						return drt5Selected.conn;
+				}
+			}
+			
+			function rebuildConn() {
+				if(gtwSelected.selected) {
+					if(gtwSelected.conn) {
+						gtwLink.linkStatus = true;
+					}
+					else if(!gtwSelected.conn) {
+						gtwLink.linkStatus = false;
+					}
+					redrawImgLine();
+				}
+				else if(drt1Selected.selected) {
+					if(drt1Selected.conn) {
+						drt1Link.linkStatus = true;
+					}
+					else {
+						drt1Link.linkStatus = false;
+					}
+					redrawImgLine();					
+				}
+				
+				else if(drt2Selected.selected) {
+					if(drt2Selected.conn) {
+						drt2Link1.linkStatus = true;
+						drt2Link2.linkStatus = true;
+						drt2Link3.linkStatus = true;
+					}
+					else {
+						drt2Link1.linkStatus = false;
+						drt2Link2.linkStatus = false;
+						drt2Link3.linkStatus = false;
+					}
+					redrawImgLine();					
+				}
+				
+				else if(drt3Selected.selected) {
+					if(drt3Selected.conn) {
+						drt2Link1.linkStatus = true;
+					}
+					else {
+						drt2Link1.linkStatus = false;
+					}
+					redrawImgLine();					
+				}
+				else if(drt4Selected.selected) {
+					if(drt4Selected.conn) {
+						drt2Link2.linkStatus = true;
+					}
+					else {
+						drt2Link2.linkStatus = false;
+					}
+					redrawImgLine();					
+				}
+				else if(drt5Selected.selected) {
+					if(drt5Selected.conn) {
+						drt2Link3.linkStatus = true;
+					}
+					else {
+						drt2Link3.linkStatus = false;
+					}
+					redrawImgLine();					
+				}
+			}
+			
 			function updateDrtData(pos) {
 				if(pos.x==gtwp.x && pos.y==gtwp.y) return gtwtext;
 				else if(pos.x==drt1p.x && pos.y==drt1p.y) return drt1text;
@@ -419,20 +628,72 @@
 				else return 0;
 			}
 			
-			function getDvcOnlineStatus(pos) {
-				if(pos.x==gtwp.x && pos.y==gtwp.y) return gtwOnline;
-				else if(pos.x==drt1p.x && pos.y==drt1p.y) return drt1Online;
-				else if(pos.x==drt2p.x && pos.y==drt2p.y) return drt2Online;
-				else if(pos.x==drt3p.x && pos.y==drt3p.y) return drt3Online;
-				else if(pos.x==drt4p.x && pos.y==drt4p.y) return drt4Online;
-				else if(pos.x==drt5p.x && pos.y==drt5p.y) return drt5Online;
-				else return gtwOnline;
+			function getDvcOnlineStatus(index) {
+				switch (index) {
+					case 0:
+						if(gtwLink.linkStatus) {
+							gtwOnline = true;
+						}
+						else {
+							gtwOnline = false;
+						}
+						return gtwOnline;
+						
+					case 1:
+						if(drt1Link.linkStatus) {
+							drt1Online = true;
+						}
+						else {
+							drt1Online = false;
+						}
+						return drt1Online;
+						
+					case 2:
+						if(drt2Link1.linkStatus || drt2Link2.linkStatus || drt2Link3.linkStatus) {
+							drt2Online = true;
+						}
+						if(!drt2Link1.linkStatus && !drt2Link2.linkStatus && !drt2Link3.linkStatus) {
+							drt2Online = false;
+						}
+						return drt2Online;
+						
+					case 3:
+						if(drt2Link1.linkStatus) {
+							drt3Online = true;
+						}
+						else {
+							drt3Online = false;
+						}
+						return drt3Online;
+						
+					case 4:
+						if(drt2Link2.linkStatus) {
+							drt4Online = true;
+						}
+						else {
+							drt4Online = false;
+						}
+						return drt4Online;
+						
+					case 5:
+						if(drt2Link3.linkStatus) {
+							drt5Online = true;
+						}
+						else {
+							drt5Online = false;
+						}
+						return drt5Online;
+				}
+			}
+			
+			function clearCanvas() {
+				ctx.clearRect(0, 0, c.width, c.height);
 			}
 			
 			function clearLine(start,end) {		
 				<!-- setLineDash([x,y]) x=segment px, y=gap px -->		
 				ctx.strokeStyle = '#ffffff';
-				ctx.lineWidth="8";
+				ctx.lineWidth="1";
 				ctx.setLineDash([3,3]);	
 				ctx.beginPath();   
 				ctx.moveTo(start.x,start.y);  
@@ -511,86 +772,98 @@
 
 			// put link line and image from link status of devices
 			function redrawImgLine() {
-			
-				drawImgBlank(gtwLink.imgInxS);
+				clearCanvas();
+				putDvcName();
 				if(!gtwLink.linkStatus) {
 					unlinkLine(gtwLink.lineInx);
 					drawImgThin(gtwLink.imgInxS);
-					gtwOnline = false;
+					//gtwOnline = false;
 				}
 				else {
 					linkLine(gtwLink.lineInx);	
 					drawImgThick(gtwLink.imgInxS);	
-					gtwOnline = true;					
+					//gtwOnline = true;					
 				}
 				
-				drawImgBlank(drt1Link.imgInxS);
 				if(!drt1Link.linkStatus) {
 					unlinkLine(drt1Link.lineInx);
 					if(!gtwLink.linkStatus) {
 						drawImgThin(drt1Link.imgInxS);
-						drt1Online = false;
+						//drt1Online = false;
 					}
 					else {
 						drawImgThick(drt1Link.imgInxS);
-						drt1Online = true;
+						//drt1Online = true;
 					}
 				}
 				else {
 					linkLine(drt1Link.lineInx);	
 					drawImgThick(drt1Link.imgInxS);
-					drt1Online = true;
+					//drt1Online = true;
 				}
 			
-				drawImgBlank(drt2Link1.imgInxE);
-				drawImgBlank(drt2Link2.imgInxE);
-				drawImgBlank(drt2Link3.imgInxE);			
 				if(!drt2Link1.linkStatus) {
 					unlinkLine(drt2Link1.lineInx);
 					drawImgThin(drt2Link1.imgInxE)
-					drt3Online = false;
+					//drt3Online = false;
 				}
 				else {
 					linkLine(drt2Link1.lineInx);
 					drawImgThick(drt2Link1.imgInxE)
-					drt3Online = true;
+					//drt3Online = true;
 				}			
 				
 				if(!drt2Link2.linkStatus) {
 					unlinkLine(drt2Link2.lineInx);
 					drawImgThin(drt2Link2.imgInxE)
-					drt4Online = false;
+					//drt4Online = false;
 				}
 				else {
 					linkLine(drt2Link2.lineInx);
 					drawImgThick(drt2Link2.imgInxE)
-					drt4Online = true;
+					//drt4Online = true;
 				}
 				
 				if(!drt2Link3.linkStatus) {
 					unlinkLine(drt2Link3.lineInx);
 					drawImgThin(drt2Link3.imgInxE)
-					drt5Online = false;
+					//drt5Online = false;
 				}
 				else {
 					linkLine(drt2Link3.lineInx);
 					drawImgThick(drt2Link3.imgInxE)
-					drt5Online = true;
+					//drt5Online = true;
 				}
 
-				drawImgBlank(drt2Link1.imgInxS);
 				if(drt2Link1.linkStatus || drt2Link2.linkStatus || drt2Link3.linkStatus || drt1Link.linkStatus) {
 					drawImgThick(drt2Link1.imgInxS)
-					drt2Online = true;
+					//drt2Online = true;
 				}
 				else {
 					drawImgThin(drt2Link1.imgInxS)
-					drt2Online = false;
+					//drt2Online = false;
 				}
 			}
 			
-			img.addEventListener("load", (e) => {			
-			  putDvcName();
+			function linkAll() {
+				gtwLink.linkStatus = true;
+				drt1Link.linkStatus = true;
+				drt2Link1.linkStatus = true;
+				drt2Link2.linkStatus = true;
+				drt2Link3.linkStatus = true;
+				redrawImgLine();
+			}
+			
+			function unlinkAll() {
+				gtwLink.linkStatus = false;
+				drt1Link.linkStatus = false;
+				drt2Link1.linkStatus = false;
+				drt2Link2.linkStatus = false;
+				drt2Link3.linkStatus = false;
+				redrawImgLine();
+			}
+			
+			img.addEventListener("load", (e) => {						  
 			  redrawImgLine();
 			});	
 			
