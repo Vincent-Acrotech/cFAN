@@ -4,10 +4,98 @@
 	<head> 
 		<meta charset="utf-8">
 		<title>Discovery for cFAN</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">					
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		
+		<style>
+			body {font-family: Arial, Helvetica, sans-serif;}
+			* {box-sizing: border-box;}
+
+			/* Button used to open the contact form - fixed at the bottom of the page */
+			.open-button {
+			  background-color: #555;
+			  color: white;
+			  padding: 16px 20px;
+			  border: none;
+			  cursor: pointer;
+			  opacity: 0.8;
+			  position: fixed;
+			  bottom: 23px;
+			  right: 28px;
+			  width: 280px;
+			}
+
+			/* The popup form - hidden by default */
+			.form-popup {
+			  display: none;
+			  position: fixed;
+			  bottom: 0;
+			  right: 15px;
+			  border: 3px solid #f1f1f1;
+			  z-index: 9;
+			}
+
+			/* Add styles to the form container */
+			.form-container {
+			  max-width: 300px;
+			  padding: 10px;
+			  background-color: white;
+			}
+
+			/* Full-width input fields */
+			.form-container input[type=text], .form-container input[type=password] {
+			  width: 100%;
+			  padding: 15px;
+			  margin: 5px 0 22px 0;
+			  border: none;
+			  background: #f1f1f1;
+			}
+
+			/* When the inputs get focus, do something */
+			.form-container input[type=text]:focus, .form-container input[type=password]:focus {
+			  background-color: #ddd;
+			  outline: none;
+			}
+
+			/* Set a style for the submit/login button */
+			.form-container .btn {
+			  background-color: #04AA6D;
+			  color: white;
+			  padding: 16px 20px;
+			  border: none;
+			  cursor: pointer;
+			  width: 100%;
+			  margin-bottom:10px;
+			  opacity: 0.8;
+			}
+
+			/* Add a red background color to the cancel button */
+			.form-container .cancel {
+			  background-color: red;
+			}
+
+			/* Add some hover effects to buttons */
+			.form-container .btn:hover, .open-button:hover {
+			  opacity: 1;
+			}
+		</style>
 	</head>
 		
-	<body style="text-align:center">		
+	<body style="text-align:center">	
+	
+		<div class="form-popup" id="myForm">
+			<form action="/action_page.php" class="form-container">
+				<h1>Data X'fer</h1>
+				<label for="email"><b>Email</b></label>
+				<input type="text" placeholder="Enter Email" name="email" required>
+
+				<label for="psw"><b>Password</b></label>
+				<input type="password" placeholder="Enter Password" name="psw" required>
+
+				<button type="submit" class="btn">Login</button>
+				<button type="button" class="btn cancel" onclick="closeForm()">Close</button>
+			</form>
+		</div>
+	
 		<h1>
 			<img src="./image/PhNetwork.png" alt="chip" width="64" height="64" "
 			style="./image/vertical-align:top"> Discovery
@@ -29,7 +117,7 @@
 				<img src="./image/IconParkOutlineCpuClr.svg" alt="chipClr" width=128 height=128 id="imgDrtClr">				
 				<img src="./image/Disconnected.svg" alt="drtDisconn" width=128 height=128 id="imgDisconn">	
 				<img src="./image/Connected.svg" alt="drtConn" width=128 height=128 id="imgConn">
-				<img src="./image/blank.png" alt="dvcBlank" width=128 height=128 id="imgBlank">
+				<img src="./image/blank.png" alt="dvcBlank" width=128 height=128 id="imgBlank">				
 			</canvas>				
 		</center>
 		
@@ -225,29 +313,33 @@
 				// check mouse position, add limits as wanted... just for example:
 				function check(e) {				
 					var pos = getPos(e),
-					    posAbs = {x: e.clientX-80, y: e.clientY};  // div is fixed, so use clientX/Y
+					    posAbs = {x: e.clientX-80, y: e.clientY},  // div is fixed, so use clientX/Y
+						index = pos2Index(region),
+						linkStatus = getDvcOnlineStatus(index),
+						selFlag = getSelImgSelected(index);
+						
 					if (!visible &&
 						pos.x >= region.x && pos.x < region.x + region.w &&
 						pos.y >= region.y && pos.y < region.y + region.h) {	
 						div.innerHTML = updateDrtData(region);								
-						me.show(posAbs);          				// show tool-tip at this pos
+						me.show(posAbs);
+						if(linkStatus) {
+							openForm();
+						}						
 					}
 					else {
 						setDivPos(posAbs);                     // otherwise, update position
 						hide();
-						var index = pos2Index(region);
-						var linkStatus = getDvcOnlineStatus(index);
-						var selFlag = getSelImgSelected(index);
 						if(!selFlag) {
 							if(linkStatus) {
-								clrSelImgConn(index);
+								clrSelImgConn(index);								
 							}
 							else {
-								setSelImgConn(index);
+								setSelImgConn(index);								
 							}
 							setSelImgSelected(index);
 							rebuildConn();
-							clrSelImgSelected(index);
+							clrSelImgSelected(index);							
 						}
 					}
 				}
@@ -863,6 +955,14 @@
 				redrawImgLine();
 			}
 			
+			function openForm() {
+			  document.getElementById("myForm").style.display = "block";
+			}
+
+			function closeForm() {
+			  document.getElementById("myForm").style.display = "none";
+			}
+						
 			img.addEventListener("load", (e) => {						  
 			  redrawImgLine();
 			});	
