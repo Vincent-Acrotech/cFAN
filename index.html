@@ -81,7 +81,6 @@
 	</head>
 		
 	<body style="text-align:center">	
-	
 		<div class="form-popup" id="myForm">
 			<form action="/action_page.php" class="form-container">
 				<h1>Data X'fer</h1>
@@ -101,9 +100,11 @@
 			style="./image/vertical-align:top"> Discovery
 		</h1>			
 					
-		<center>			
-			<button id="linkBtn" onclick="linkAll();"><img id="image" width=32 height=32 src="./image/JamLink.png"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<button id="unLinkBtn" onclick="unlinkAll()"><img id="image" width=32 height=32 src="./image/BxUnlink.png"></button>
+		<center>		
+			<button id="linkBtn" onclick="linkAll()"><img id="image" width=32 height=32 src="./image/RaphaelConnect.svg"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<button id="unLinkBtn" onclick="unlinkAll()"><img id="image" width=32 height=32 src="./image/RaphaelDisconnect.svg"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<button id="xferBtn" onclick="Xfer()"><img id="image" width=32 height=32 src="./image/MingcuteTransfer4Line.svg"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<button id="resumeBtn" onclick="resumeConn()"><img id="image" width=32 height=32 src="./image/MaterialSymbolsRestartAltRounded.svg"></button>
 		</center>
 		
 		<center>
@@ -118,10 +119,18 @@
 				<img src="./image/Disconnected.svg" alt="drtDisconn" width=128 height=128 id="imgDisconn">	
 				<img src="./image/Connected.svg" alt="drtConn" width=128 height=128 id="imgConn">
 				<img src="./image/blank.png" alt="dvcBlank" width=128 height=128 id="imgBlank">				
+				<img src="./image/FlatColorIconsDownload.svg" alt="dvcBlank" width=128 height=128 id="imgDownload">				
+				<img src="./image/FlatColorIconsUpload.svg" alt="dvcBlank" width=128 height=128 id="imgUpload">				
 			</canvas>				
 		</center>
 		
-		<script>			
+		<script type="text/javascript">
+		
+			var xferImgInx = 0,
+				xferLinkStatus = false,
+				xfer = false,
+				downMode = false;
+				
 			// link status of devices
 			var gtwLink   = {linkNode: "drt1", linkStatus: true,  lineInx: 0,  imgInxS:0, imgInxE: 1},
 				drt1Link  = {linkNode: "drt2", linkStatus: true,  lineInx: 1,  imgInxS:1, imgInxE: 2},
@@ -156,6 +165,8 @@
 				img6=document.getElementById("imgConn"),	
 				img7=document.getElementById("imgDisconn"),	
 				img8=document.getElementById("imgBlank"),	
+				img12=document.getElementById("imgUpload"),
+				img13=document.getElementById("imgDownload"),
 				canvas = document.querySelector("canvas"),					
 							
 				// image position index
@@ -167,7 +178,7 @@
 				drt5p = {x: 200, y: 507, w: 48, h: 48},
 				
 				// image placed location and size for thin color
-				gtwThin  = {inx: img,  x:  gtwp.x, y:  gtwp.y, w: gtwp.w,  h: gtwp.h},
+				gtwThin  = {inx: img,  x:  gtwp.x, y:  gtwp.y, w: gtwp.w,  h:  gtwp.h},
 				drt1Thin = {inx: img2, x: drt1p.x, y: drt1p.y, w: drt1p.w, h: drt1p.h},
 				drt2Thin = {inx: img2, x: drt2p.x, y: drt2p.y, w: drt2p.w, h: drt2p.h},
 				drt3Thin = {inx: img2, x: drt3p.x, y: drt3p.y, w: drt3p.w, h: drt3p.h},
@@ -175,7 +186,7 @@
 				drt5Thin = {inx: img2, x: drt5p.x, y: drt5p.y, w: drt5p.w, h: drt5p.h},
 				
 				// image placed location and size for thick color image
-				gtwThick  = {inx: img1, x:  gtwp.x, y:  gtwp.y, w: gtwp.w,  h: gtwp.h},				
+				gtwThick  = {inx: img1, x:  gtwp.x, y:  gtwp.y, w: gtwp.w,  h:  gtwp.h},				
 				drt1Thick = {inx: img3, x: drt1p.x, y: drt1p.y, w: drt1p.w, h: drt1p.h},
 				drt2Thick = {inx: img3, x: drt2p.x, y: drt2p.y, w: drt2p.w, h: drt2p.h},
 				drt3Thick = {inx: img3, x: drt3p.x, y: drt3p.y, w: drt3p.w, h: drt3p.h},
@@ -183,7 +194,7 @@
 				drt5Thick = {inx: img3, x: drt5p.x, y: drt5p.y, w: drt5p.w, h: drt5p.h},
 				
 				// image placed location and size for Connected image
-				gtwConn  = {inx: img6, x:  gtwp.x, y:  gtwp.y, w: gtwp.w,  h: gtwp.h},				
+				gtwConn  = {inx: img6, x:  gtwp.x, y:  gtwp.y, w: gtwp.w,  h:  gtwp.h},				
 				drt1Conn = {inx: img6, x: drt1p.x, y: drt1p.y, w: drt1p.w, h: drt1p.h},
 				drt2Conn = {inx: img6, x: drt2p.x, y: drt2p.y, w: drt2p.w, h: drt2p.h},
 				drt3Conn = {inx: img6, x: drt3p.x, y: drt3p.y, w: drt3p.w, h: drt3p.h},
@@ -191,15 +202,31 @@
 				drt5Conn = {inx: img6, x: drt5p.x, y: drt5p.y, w: drt5p.w, h: drt5p.h},
 				
 				// image placed location and size for Disconnected image
-				gtwDisconn  = {inx: img7, x:  gtwp.x, y:  gtwp.y, w: gtwp.w,  h: gtwp.h},				
+				gtwDisconn  = {inx: img7, x:  gtwp.x, y:  gtwp.y, w: gtwp.w,  h:  gtwp.h},				
 				drt1Disconn = {inx: img7, x: drt1p.x, y: drt1p.y, w: drt1p.w, h: drt1p.h},
 				drt2Disconn = {inx: img7, x: drt2p.x, y: drt2p.y, w: drt2p.w, h: drt2p.h},
 				drt3Disconn = {inx: img7, x: drt3p.x, y: drt3p.y, w: drt3p.w, h: drt3p.h},
 				drt4Disconn = {inx: img7, x: drt4p.x, y: drt4p.y, w: drt4p.w, h: drt4p.h},
 				drt5Disconn = {inx: img7, x: drt5p.x, y: drt5p.y, w: drt5p.w, h: drt5p.h},
+
+				// image placed location and size for Upload image
+				gtwUpload  = {inx: img12, x:  gtwp.x, y:  gtwp.y, w: gtwp.w,  h:  gtwp.h},				
+				drt1Upload = {inx: img12, x: drt1p.x, y: drt1p.y, w: drt1p.w, h: drt1p.h},
+				drt2Upload = {inx: img12, x: drt2p.x, y: drt2p.y, w: drt2p.w, h: drt2p.h},
+				drt3Upload = {inx: img12, x: drt3p.x, y: drt3p.y, w: drt3p.w, h: drt3p.h},
+				drt4Upload = {inx: img12, x: drt4p.x, y: drt4p.y, w: drt4p.w, h: drt4p.h},
+				drt5Upload = {inx: img12, x: drt5p.x, y: drt5p.y, w: drt5p.w, h: drt5p.h},
+
+				// image placed location and size for Download image
+				gtwDownload  = {inx: img13, x:  gtwp.x, y:  gtwp.y, w: gtwp.w,  h:  gtwp.h},				
+				drt1Download = {inx: img13, x: drt1p.x, y: drt1p.y, w: drt1p.w, h: drt1p.h},
+				drt2Download = {inx: img13, x: drt2p.x, y: drt2p.y, w: drt2p.w, h: drt2p.h},
+				drt3Download = {inx: img13, x: drt3p.x, y: drt3p.y, w: drt3p.w, h: drt3p.h},
+				drt4Download = {inx: img13, x: drt4p.x, y: drt4p.y, w: drt4p.w, h: drt4p.h},
+				drt5Download = {inx: img13, x: drt5p.x, y: drt5p.y, w: drt5p.w, h: drt5p.h},
 				
 				// image placed location and size for clear color image
-				gtwClr =  {inx: img5, x: gtwp.x,  y: gtwp.y,  w: gtwp.w,  h: gtwp.h},
+				gtwClr =  {inx: img5, x: gtwp.x,  y: gtwp.y,  w: gtwp.w,  h:  gtwp.h},
 				drt1Clr = {inx: img4, x: drt1p.x, y: drt1p.y, w: drt1p.w, h: drt1p.h},
 				drt2Clr = {inx: img4, x: drt2p.x, y: drt2p.y, w: drt2p.w, h: drt2p.h},
 				drt3Clr = {inx: img4, x: drt3p.x, y: drt3p.y, w: drt3p.w, h: drt3p.h},
@@ -281,6 +308,61 @@
 				tdrt4 = new ToolTip(canvas, drt4Thin, drt4text, 180, 5000),
 				tiph5 = new ToolTip(canvas, drt5Thin, drt5text, 180, 5000);
 			
+			
+			// mouse event instance
+			var isMouseDown = false;
+
+			document.addEventListener('mousedown', function(event) { 
+				if ( event.which ) isMouseDown = true;
+			}, true);
+
+			document.addEventListener('mouseup', function(event) { 
+				if ( event.which ) isMouseDown = false;
+			}, true);
+			
+			const delay = 1500; // Duration in milliseconds of how long you have to hold click.
+			let isActive = false;
+			let timer;
+
+			function start(e) {
+			  isActive = true;
+			  timer = setTimeout(makeChange, delay);
+			  
+			  // In case you want to prevent Default functionality on mouse down.
+			  if (e.preventDefault) {
+				e.preventDefault();
+			  }
+			  else {
+				e.returnValue = false;
+			  }
+			}
+
+			function makeChange() {
+			  if (timer) {
+				clearTimeout(timer);
+			  }
+			  
+			  if (isActive) {				
+				isActive = false;
+				if(xferLinkStatus) {
+					if(downMode) {
+						drawImgDownload(xferImgInx);
+						downMode = false;
+					}
+					else {
+						drawImgUpload(xferImgInx);
+						downMode = true;
+					}
+					xfer = true;	
+				}
+			  }
+			}
+
+			function revert() {
+				clearTimeout(timer);
+				isActive = false;				
+			}
+			
 			// The Tool-Tip instance:
 			function ToolTip(canvas, region, text, width, timeout) {
 
@@ -311,59 +393,79 @@
 				}
 
 				// check mouse position, add limits as wanted... just for example:
-				function check(e) {				
-					var pos = getPos(e),
-					    posAbs = {x: e.clientX-80, y: e.clientY},  // div is fixed, so use clientX/Y
-						index = pos2Index(region),
+				function check(e) {
+					var	pos = getPos(e),
+						posAbs = {x: e.clientX-80, y: e.clientY},
+						index = pos2Index(region),							
 						linkStatus = getDvcOnlineStatus(index),
-						selFlag = getSelImgSelected(index);
-						
-					if (!visible &&
-						pos.x >= region.x && pos.x < region.x + region.w &&
-						pos.y >= region.y && pos.y < region.y + region.h) {	
-						div.innerHTML = updateDrtData(region);								
-						me.show(posAbs);
-						if(linkStatus) {
-							openForm();
-						}						
+						selFlag = getSelImgSelected(index);												
+														
+					if(isMouseDown) {
+						start(e);
 					}
 					else {
-						setDivPos(posAbs);                     // otherwise, update position
-						hide();
-						if(!selFlag) {
-							if(linkStatus) {
-								clrSelImgConn(index);								
-							}
-							else {
-								setSelImgConn(index);								
-							}
-							setSelImgSelected(index);
-							rebuildConn();
-							clrSelImgSelected(index);							
+						revert();
+					}
+					
+					if(isMouseDown) {	
+							
+						if (!visible &&
+							pos.x >= region.x && pos.x < region.x + region.w &&
+							pos.y >= region.y && pos.y < region.y + region.h) {
+							div.innerHTML = updateDrtData(region);
+							xferImgInx = index;
+							xferLinkStatus = linkStatus;
+							me.show(posAbs);
+							//if(linkStatus) {
+							//	openForm();							
+							//}						
 						}
+						else {
+							setDivPos(posAbs);                     // otherwise, update position
+							hide();
+							if(!selFlag) {
+								if(linkStatus) {
+									xferLinkStatus = false;
+									clrSelImgConn(index);								
+								}
+								else {
+									setSelImgConn(index);
+									xferLinkStatus = true;	
+								}
+								setSelImgSelected(index);
+								if(!xfer) {
+									rebuildConn();
+								}
+								clrSelImgSelected(index);							
+							}
+						}
+					}
+					//else if(isMouseDown && xfer) {	
+					//	hide();
+					//}
+				}
+				
+				// get mouse position relative to canvas
+				function getPos(e) {
+					var r = canvas.getBoundingClientRect();
+						return {x: e.clientX - r.left, y: e.clientY - r.top}
+				}
+			  
+				// update and adjust div position if needed (anchor to a different corner etc.)
+				function setDivPos(pos) {
+					if (visible){
+						if (pos.x < 0) pos.x = 0;
+						if (pos.y < 0) pos.y = 0;
+						// other bound checks here
+						div.style.left = pos.x + "px";
+						div.style.top = pos.y + "px";
 					}
 				}
 			  
-			  // get mouse position relative to canvas
-			  function getPos(e) {
-				var r = canvas.getBoundingClientRect();
-				return {x: e.clientX - r.left, y: e.clientY - r.top}
-			  }
-			  
-			  // update and adjust div position if needed (anchor to a different corner etc.)
-			  function setDivPos(pos) {
-				if (visible){
-				  if (pos.x < 0) pos.x = 0;
-				  if (pos.y < 0) pos.y = 0;
-				  // other bound checks here
-				  div.style.left = pos.x + "px";
-				  div.style.top = pos.y + "px";
-				}
-			  }
-			  
-			  // we need to use shared event handlers:
-			  //canvas.addEventListener("mousemove", check);
-			  canvas.addEventListener("click", check);			 
+				// we need to use shared event handlers:
+				//canvas.addEventListener("mousemove", check);
+				canvas.addEventListener("mousedown", check);
+				canvas.addEventListener("mouseup", check);				
 			}	
 					
 			function drawImgThin(imgInx) {
@@ -410,6 +512,54 @@
 						break;
 					case 5:
 						ctx.drawImage(drt5Thick.inx, drt5Thick.x, drt5Thick.y, drt5Thick.w, drt5Thick.h);		 
+						break;					
+				}
+			}
+
+			function drawImgUpload(imgInx) {
+				drawImgBlank(imgInx);
+				switch(imgInx) {
+					case 0:								
+						ctx.drawImage(gtwUpload.inx, gtwUpload.x, gtwUpload.y, gtwUpload.w, gtwUpload.h);
+						break;
+					case 1:
+						ctx.drawImage(drt1Upload.inx, drt1Upload.x, drt1Upload.y, drt1Upload.w, drt1Upload.h);				 
+						break;
+					case 2:
+						ctx.drawImage(drt2Upload.inx, drt2Upload.x, drt2Upload.y, drt2Upload.w, drt2Upload.h);			 
+						break;
+					case 3:
+						ctx.drawImage(drt3Upload.inx, drt3Upload.x, drt3Upload.y, drt3Upload.w, drt3Upload.h);		 
+						break;
+					case 4:
+						ctx.drawImage(drt4Upload.inx, drt4Upload.x, drt4Upload.y, drt4Upload.w, drt4Upload.h);	 
+						break;
+					case 5:
+						ctx.drawImage(drt5Upload.inx, drt5Upload.x, drt5Upload.y, drt5Upload.w, drt5Upload.h);		 
+						break;					
+				}
+			}
+
+			function drawImgDownload(imgInx) {
+				drawImgBlank(imgInx);
+				switch(imgInx) {
+					case 0:								
+						ctx.drawImage(gtwDownload.inx, gtwDownload.x, gtwDownload.y, gtwDownload.w, gtwDownload.h);
+						break;
+					case 1:
+						ctx.drawImage(drt1Download.inx, drt1Download.x, drt1Download.y, drt1Download.w, drt1Download.h);				 
+						break;
+					case 2:
+						ctx.drawImage(drt2Download.inx, drt2Download.x, drt2Download.y, drt2Download.w, drt2Download.h);			 
+						break;
+					case 3:
+						ctx.drawImage(drt3Download.inx, drt3Download.x, drt3Download.y, drt3Download.w, drt3Download.h);		 
+						break;
+					case 4:
+						ctx.drawImage(drt4Download.inx, drt4Download.x, drt4Download.y, drt4Download.w, drt4Download.h);	 
+						break;
+					case 5:
+						ctx.drawImage(drt5Download.inx, drt5Download.x, drt5Download.y, drt5Download.w, drt5Download.h);		 
 						break;					
 				}
 			}
@@ -955,6 +1105,15 @@
 				redrawImgLine();
 			}
 			
+			function Xfer() {
+				
+			}
+			
+			function resumeConn() {
+				xfer = false;
+				redrawImgLine();
+			}
+			
 			function openForm() {
 			  document.getElementById("myForm").style.display = "block";
 			}
@@ -962,7 +1121,16 @@
 			function closeForm() {
 			  document.getElementById("myForm").style.display = "none";
 			}
-						
+			
+			window.onload=function()
+			{
+				var el=document.getElementById('xferBtn');
+				el.onclick=function(){
+					var my_text=prompt('Enter message here');
+					if(my_text) alert(my_text);
+				}
+			}
+			
 			img.addEventListener("load", (e) => {						  
 			  redrawImgLine();
 			});	
