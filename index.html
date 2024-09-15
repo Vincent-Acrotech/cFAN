@@ -78,6 +78,12 @@
 			  opacity: 1;
 			}
 		</style>
+		
+		<script>
+			<img id="updnImg" src="./image/MingcuteTransfer4Line.svg">	
+			<img id="networkImg" src="./image/IconoirNetworkReverse.svg">	
+		</script>
+		
 	</head>
 		
 	<body style="text-align:center">	
@@ -96,15 +102,17 @@
 		</div>
 	
 		<h1>
-			<img src="./image/PhNetwork.png" alt="chip" width="64" height="64" "
+			<img src="./image/LaNetworkWired.svg" alt="chip" width="48" height="48" "
 			style="./image/vertical-align:top"> Discovery
 		</h1>			
-					
-		<center>		
+		
+		<center>			
 			<button id="linkBtn" onclick="linkAll()"><img id="image" width=32 height=32 src="./image/RaphaelConnect.svg"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			<button id="unLinkBtn" onclick="unlinkAll()"><img id="image" width=32 height=32 src="./image/RaphaelDisconnect.svg"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<button id="xferBtn" onclick="Xfer()"><img id="image" width=32 height=32 src="./image/MingcuteTransfer4Line.svg"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<button id="resumeBtn" onclick="resumeConn()"><img id="image" width=32 height=32 src="./image/MaterialSymbolsRestartAltRounded.svg"></button>
+			<button id="xferBtn" onclick="Xfer()"><img id="image" width=32 height=32 src="./image/IconParkOutlineCommunication.svg"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<button id="resumeBtn" onclick="resumeConn()"><img id="image" width=32 height=32 src="./image/MaterialSymbolsRestartAltRounded.svg"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<button id="OprModeBtn" onclick="OprMode()"><img id="image" width=32 height=32 src="./image/IconoirNetworkReverse.svg"></button>
+			
 		</center>
 		
 		<center>
@@ -307,62 +315,7 @@
 				tdrt3 = new ToolTip(canvas, drt3Thin, drt3text, 180, 5000),
 				tdrt4 = new ToolTip(canvas, drt4Thin, drt4text, 180, 5000),
 				tiph5 = new ToolTip(canvas, drt5Thin, drt5text, 180, 5000);
-			
-			
-			// mouse event instance
-			var isMouseDown = false;
-
-			document.addEventListener('mousedown', function(event) { 
-				if ( event.which ) isMouseDown = true;
-			}, true);
-
-			document.addEventListener('mouseup', function(event) { 
-				if ( event.which ) isMouseDown = false;
-			}, true);
-			
-			const delay = 1500; // Duration in milliseconds of how long you have to hold click.
-			let isActive = false;
-			let timer;
-
-			function start(e) {
-			  isActive = true;
-			  timer = setTimeout(makeChange, delay);
-			  
-			  // In case you want to prevent Default functionality on mouse down.
-			  if (e.preventDefault) {
-				e.preventDefault();
-			  }
-			  else {
-				e.returnValue = false;
-			  }
-			}
-
-			function makeChange() {
-			  if (timer) {
-				clearTimeout(timer);
-			  }
-			  
-			  if (isActive) {				
-				isActive = false;
-				if(xferLinkStatus) {
-					if(downMode) {
-						drawImgDownload(xferImgInx);
-						downMode = false;
-					}
-					else {
-						drawImgUpload(xferImgInx);
-						downMode = true;
-					}
-					xfer = true;	
-				}
-			  }
-			}
-
-			function revert() {
-				clearTimeout(timer);
-				isActive = false;				
-			}
-			
+						
 			// The Tool-Tip instance:
 			function ToolTip(canvas, region, text, width, timeout) {
 
@@ -399,50 +352,34 @@
 						index = pos2Index(region),							
 						linkStatus = getDvcOnlineStatus(index),
 						selFlag = getSelImgSelected(index);												
-														
-					if(isMouseDown) {
-						start(e);
+							
+					if (!visible &&
+						pos.x >= region.x && pos.x < region.x + region.w &&
+						pos.y >= region.y && pos.y < region.y + region.h) {
+						div.innerHTML = updateDrtData(region);
+						xferImgInx = index;
+						xferLinkStatus = linkStatus;
+						me.show(posAbs);
 					}
 					else {
-						revert();
-					}
-					
-					if(isMouseDown) {	
-							
-						if (!visible &&
-							pos.x >= region.x && pos.x < region.x + region.w &&
-							pos.y >= region.y && pos.y < region.y + region.h) {
-							div.innerHTML = updateDrtData(region);
-							xferImgInx = index;
-							xferLinkStatus = linkStatus;
-							me.show(posAbs);
-							//if(linkStatus) {
-							//	openForm();							
-							//}						
-						}
-						else {
-							setDivPos(posAbs);                     // otherwise, update position
-							hide();
-							if(!selFlag) {
-								if(linkStatus) {
-									xferLinkStatus = false;
-									clrSelImgConn(index);								
-								}
-								else {
-									setSelImgConn(index);
-									xferLinkStatus = true;	
-								}
-								setSelImgSelected(index);
-								if(!xfer) {
-									rebuildConn();
-								}
-								clrSelImgSelected(index);							
+						setDivPos(posAbs); 
+						hide();
+						if(!selFlag) {
+							if(linkStatus) {
+								xferLinkStatus = false;
+								clrSelImgConn(index);								
 							}
+							else {
+								setSelImgConn(index);
+								xferLinkStatus = true;	
+							}
+							setSelImgSelected(index);
+							if(!xfer) {
+								rebuildConn();
+							}
+							clrSelImgSelected(index);							
 						}
 					}
-					//else if(isMouseDown && xfer) {	
-					//	hide();
-					//}
 				}
 				
 				// get mouse position relative to canvas
@@ -464,8 +401,8 @@
 			  
 				// we need to use shared event handlers:
 				//canvas.addEventListener("mousemove", check);
-				canvas.addEventListener("mousedown", check);
-				canvas.addEventListener("mouseup", check);				
+				//canvas.addEventListener("mousedown", check);
+				canvas.addEventListener("click", check);				
 			}	
 					
 			function drawImgThin(imgInx) {
@@ -1114,12 +1051,9 @@
 				redrawImgLine();
 			}
 			
-			function openForm() {
-			  document.getElementById("myForm").style.display = "block";
-			}
-
-			function closeForm() {
-			  document.getElementById("myForm").style.display = "none";
+			function OprMode() {
+				var img = document.getElementById("updnImg");
+					img.src="./image/MingcuteTransfer4Line.svg";
 			}
 			
 			window.onload=function()
