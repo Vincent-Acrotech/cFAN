@@ -78,12 +78,7 @@
 			  opacity: 1;
 			}
 		</style>
-		
-		<script>
-			<img id="updnImg" src="./image/MingcuteTransfer4Line.svg">	
-			<img id="networkImg" src="./image/IconoirNetworkReverse.svg">	
-		</script>
-		
+				
 	</head>
 		
 	<body style="text-align:center">	
@@ -106,13 +101,19 @@
 			style="./image/vertical-align:top"> Discovery
 		</h1>			
 		
+		<!--label id="test1"></label>
+		<label id="test2"></label>
+		<label id="test3"></label>
+		<label id="test4"></label-->
+		
 		<center>			
-			<button id="linkBtn" onclick="linkAll()"><img id="image" width=32 height=32 src="./image/RaphaelConnect.svg"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<button id="unLinkBtn" onclick="unlinkAll()"><img id="image" width=32 height=32 src="./image/RaphaelDisconnect.svg"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<button id="xferBtn" onclick="Xfer()"><img id="image" width=32 height=32 src="./image/IconParkOutlineCommunication.svg"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<button id="resumeBtn" onclick="resumeConn()"><img id="image" width=32 height=32 src="./image/MaterialSymbolsRestartAltRounded.svg"></button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<button id="OprModeBtn" onclick="OprMode()"><img id="image" width=32 height=32 src="./image/IconoirNetworkReverse.svg"></button>
-			
+			<button id="linkBtn" onclick="linkAll()"><img id="imageLink" width=32 height=32 src="./image/WpfConnected.svg"></button>&nbsp;&nbsp;&nbsp;
+			<button id="unlinkBtn" onclick="unlinkAll()"><img id="imageUnlink" width=32 height=32 src="./image/WpfDisconnected.svg"></button>&nbsp;&nbsp;&nbsp;
+			<button id="xferBtn" onclick="Xfer()"><img id="imageXfer" width=32 height=32 src="./image/IconParkOutlineCommunication.svg"></button>&nbsp;&nbsp;&nbsp;
+			<button id="resumeBtn" onclick="resumeConn()"><img id="image" width=32 height=32 src="./image/MaterialSymbolsRestartAltRounded.svg"></button>&nbsp;&nbsp;&nbsp;
+			<button id="oprModeBtn" onclick="changeMode()"><img id="imagMode" width=32 height=32 src="./image/IconoirNetworkReverse.svg"></button>&nbsp;&nbsp;&nbsp;
+			<button id="readMeBtn" onclick="readMe()"><img id="imagReadme" width=32 height=32 src="./image/OcticonBook.svg"></button>&nbsp;&nbsp;&nbsp;&nbsp;
+			<button id="bleBtn" onclick="readMe()"><img id="imgBle" width=32 height=32 src="./image/MaterialSymbolsBluetooth.svg"></button>
 		</center>
 		
 		<center>
@@ -134,10 +135,11 @@
 		
 		<script type="text/javascript">
 		
-			var xferImgInx = 0,
-				xferLinkStatus = false,
-				xfer = false,
-				downMode = false;
+			var	netMode = false,
+				uploadCnt = 0,
+				downloadCnt = 0;
+				netmodeEdge = 0;
+				updnMode = 1;
 				
 			// link status of devices
 			var gtwLink   = {linkNode: "drt1", linkStatus: true,  lineInx: 0,  imgInxS:0, imgInxE: 1},
@@ -153,6 +155,14 @@
 				drt3Online = false,
 				drt4Online = false,
 				drt5Online = false;
+				
+			// image type of devices
+			var gtwImgThickType  = false,
+				drt1ImgThickType = false,
+				drt2ImgThickType = false,
+				drt3ImgThickType = false,
+				drt4ImgThickType = false,
+				drt5ImgThickType = false;
 				
 			// selected image for put conn or disconn image
 			var gtwSelected  = {selected: false, conn: false},
@@ -262,7 +272,7 @@
 				// image text
 				imgTextFont = "11pt NSimSun",
 				gtwText     = "Field Gateway",
-				drt1Text1   = "Root",
+				drt1Text1   = "DUT",
 				drt1Text2   = "DRT 1",
 				drt2Text1   = "Local Base",
 				drt2Text2   = "DRT 2",
@@ -309,12 +319,12 @@
 							"Device Location:<br>" + "&nbsp HLTPE-05FNC-42252766",	
 	
 			// create a tool-tip instance:
-				tgtw  = new ToolTip(canvas, gtwThin,  gtwtext,  120, 5000),				
-				tdrt1 = new ToolTip(canvas, drt1Thin, drt1text, 180, 5000),
-				tdrt2 = new ToolTip(canvas, drt2Thin, drt2text, 180, 5000),
-				tdrt3 = new ToolTip(canvas, drt3Thin, drt3text, 180, 5000),
-				tdrt4 = new ToolTip(canvas, drt4Thin, drt4text, 180, 5000),
-				tiph5 = new ToolTip(canvas, drt5Thin, drt5text, 180, 5000);
+				tgtw  = new ToolTip(myCanvas, gtwThin,  gtwtext,  120, 5000),				
+				tdrt1 = new ToolTip(myCanvas, drt1Thin, drt1text, 180, 5000),
+				tdrt2 = new ToolTip(myCanvas, drt2Thin, drt2text, 180, 5000),
+				tdrt3 = new ToolTip(myCanvas, drt3Thin, drt3text, 180, 5000),
+				tdrt4 = new ToolTip(myCanvas, drt4Thin, drt4text, 180, 5000),
+				tdrt5 = new ToolTip(myCanvas, drt5Thin, drt5text, 180, 5000);
 						
 			// The Tool-Tip instance:
 			function ToolTip(canvas, region, text, width, timeout) {
@@ -351,34 +361,66 @@
 						posAbs = {x: e.clientX-80, y: e.clientY},
 						index = pos2Index(region),							
 						linkStatus = getDvcOnlineStatus(index),
-						selFlag = getSelImgSelected(index);												
-							
+						thickStatus = getImagThickStatus(index);
+						selFlag = getSelImgSelected(index);	
+											
+					if(!netMode) {
+						visible = true;
+					}
+					
+					if((netmodeEdge & 3) == 1) {					
+						visible = false;
+						netmodeEdge = 3;
+					}					
+					else if((netmodeEdge & 3) == 2) {
+						visible = true;						
+						netmodeEdge = 0;
+					}	
+					
 					if (!visible &&
 						pos.x >= region.x && pos.x < region.x + region.w &&
 						pos.y >= region.y && pos.y < region.y + region.h) {
+						
 						div.innerHTML = updateDrtData(region);
-						xferImgInx = index;
-						xferLinkStatus = linkStatus;
 						me.show(posAbs);
 					}
-					else {
+					else if(visible && netMode) {	
 						setDivPos(posAbs); 
 						hide();
 						if(!selFlag) {
 							if(linkStatus) {
-								xferLinkStatus = false;
 								clrSelImgConn(index);								
 							}
 							else {
 								setSelImgConn(index);
-								xferLinkStatus = true;	
 							}
 							setSelImgSelected(index);
-							if(!xfer) {
-								rebuildConn();
-							}
-							clrSelImgSelected(index);							
+							rebuildConn();
+							clrSelImgSelected(index);
+							
 						}
+					}
+					else if(visible && !netMode && thickStatus &&
+						pos.x >= region.x && pos.x < region.x + region.w &&
+						pos.y >= region.y && pos.y < region.y + region.h) {
+						
+						
+						if((updnMode == 1) && (uploadCnt == 0)) {
+							uploadCnt++;								
+							drawImgUpload(index);
+							if(downloadCnt == 0) {
+								updnMode = 2;
+							}
+						}
+						else if((updnMode == 2) && (downloadCnt == 0)) {
+							downloadCnt++;								
+							drawImgDownload(index);
+							if(uploadCnt == 0) {
+								updnMode = 1;
+							}
+						}
+						//test1.innerHTML = "uploadCnt:"+uploadCnt+"   ";
+						//test2.innerHTML = "downloadCnt:"+downloadCnt;
 					}
 				}
 				
@@ -956,71 +998,88 @@
 				if(!gtwLink.linkStatus) {
 					unlinkLine(gtwLink.lineInx);
 					drawImgThin(gtwLink.imgInxS);
-					//gtwOnline = false;
+					gtwImgThickType = false;
 				}
 				else {
 					linkLine(gtwLink.lineInx);	
 					drawImgThick(gtwLink.imgInxS);	
-					//gtwOnline = true;					
+					gtwImgThickType = true;			
 				}
 				
 				if(!drt1Link.linkStatus) {
 					unlinkLine(drt1Link.lineInx);
 					if(!gtwLink.linkStatus) {
 						drawImgThin(drt1Link.imgInxS);
-						//drt1Online = false;
+						drt1ImgThickType = false;
 					}
 					else {
 						drawImgThick(drt1Link.imgInxS);
-						//drt1Online = true;
+						drt1ImgThickType = true;
 					}
 				}
 				else {
 					linkLine(drt1Link.lineInx);	
 					drawImgThick(drt1Link.imgInxS);
-					//drt1Online = true;
+					drt1ImgThickType = true;
 				}
 			
 				if(!drt2Link1.linkStatus) {
 					unlinkLine(drt2Link1.lineInx);
 					drawImgThin(drt2Link1.imgInxE)
-					//drt3Online = false;
+					drt3ImgThickType = false;
 				}
 				else {
 					linkLine(drt2Link1.lineInx);
 					drawImgThick(drt2Link1.imgInxE)
-					//drt3Online = true;
+					drt3ImgThickType = true;
 				}			
 				
 				if(!drt2Link2.linkStatus) {
 					unlinkLine(drt2Link2.lineInx);
 					drawImgThin(drt2Link2.imgInxE)
-					//drt4Online = false;
+					drt4ImgThickType = false;
 				}
 				else {
 					linkLine(drt2Link2.lineInx);
 					drawImgThick(drt2Link2.imgInxE)
-					//drt4Online = true;
+					drt4ImgThickType = true;
 				}
 				
 				if(!drt2Link3.linkStatus) {
 					unlinkLine(drt2Link3.lineInx);
 					drawImgThin(drt2Link3.imgInxE)
-					//drt5Online = false;
+					drt5ImgThickType = false;
 				}
 				else {
 					linkLine(drt2Link3.lineInx);
 					drawImgThick(drt2Link3.imgInxE)
-					//drt5Online = true;
+					drt5ImgThickType = true;
 				}
 
 				if(drt2Link1.linkStatus || drt2Link2.linkStatus || drt2Link3.linkStatus || drt1Link.linkStatus) {
 					drawImgThick(drt2Link1.imgInxS)
-					//drt2Online = true;
+					drt2ImgThickType = true;
 				}
 				else {
 					drawImgThin(drt2Link1.imgInxS)
-					//drt2Online = false;
+					drt2ImgThickType = false;
+				}
+			}
+			
+			function getImagThickStatus(index) {
+				switch (index) {
+					case 0:
+						return gtwImgThickType;
+					case 1:
+						return drt1ImgThickType;
+					case 2:
+						return drt2ImgThickType;
+					case 3:
+						return drt3ImgThickType;
+					case 4:
+						return drt4ImgThickType;
+					case 5:
+						return drt5ImgThickType;
 				}
 			}
 			
@@ -1047,13 +1106,51 @@
 			}
 			
 			function resumeConn() {
-				xfer = false;
 				redrawImgLine();
+				uploadCnt = 0;
+				downloadCnt = 0;
+				updnMode = 1;
 			}
-			
-			function OprMode() {
-				var img = document.getElementById("updnImg");
-					img.src="./image/MingcuteTransfer4Line.svg";
+			function changeMode() {
+				var modeBtnImg = document.getElementById("imagMode");
+					//xferBtnImg = document.getElementById("imageXfer");
+					//linkBtnImg = document.getElementById("imageLink");
+					//unlinkBtnImg = document.getElementById("imageUnlink");
+					
+				if(netMode) {
+					netMode = false;
+					modeBtnImg.src="./image/MingcuteTransfer4Line.svg";
+					//xferBtnImg.src="./image/IconParkOutlineCommunication.svg";
+					//linkBtnImg.src="./image/RaphaelConnectThin.svg";
+					//unlinkBtnImg.src="./image/RaphaelDisconnectThin.svg";
+					//document.getElementById("xferBtn").disabled = false;
+					//document.getElementById("unlinkBtn").disabled = true;
+					//document.getElementById("linkBtn").disabled = true;
+					document.getElementById("linkBtn").style.display = "none";
+					document.getElementById("unlinkBtn").style.display = "none";
+					document.getElementById("xferBtn").style.display = "";
+				}
+				else {
+					modeBtnImg.src="./image/IconoirNetworkReverse.svg";
+					//xferBtnImg.src="./image/IconParkOutlineCommunicationThin.svg";
+					//linkBtnImg.src="./image/RaphaelConnect.svg";
+					//unlinkBtnImg.src="./image/RaphaelDisconnect.svg";
+					netMode = true;
+					//document.getElementById("xferBtn").disabled = true;
+					//document.getElementById("unlinkBtn").disabled = false;
+					//document.getElementById("linkBtn").disabled = false;
+					document.getElementById("linkBtn").style.display = "";
+					document.getElementById("unlinkBtn").style.display = "";
+					document.getElementById("xferBtn").style.display = "none";
+					redrawImgLine();
+				}
+				netmodeEdge <<= 1;
+				if(netMode) {
+					netmodeEdge |= 1;
+				}
+				uploadCnt = 0;
+				downloadCnt = 0;
+				updnMode = 1;
 			}
 			
 			window.onload=function()
@@ -1067,6 +1164,7 @@
 			
 			img.addEventListener("load", (e) => {						  
 			  redrawImgLine();
+			  changeMode();
 			});	
 			
 		</script>
