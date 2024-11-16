@@ -98,22 +98,22 @@
 	
 		<h1>
 			<img src="./image/LaNetworkWired.svg" alt="chip" width="48" height="48" "
-			style="./image/vertical-align:top"> Discovery
+			style="vertical-align:top"> Discovery
 		</h1>			
 		
-		<!--label id="test1"></label>
+		<label id="test1"></label>
 		<label id="test2"></label>
 		<label id="test3"></label>
-		<label id="test4"></label-->
+		<label id="test4"></label>
 		
 		<center>			
 			<button id="linkBtn" onclick="linkAll()"><img id="imageLink" width=32 height=32 src="./image/WpfConnected.svg"></button>&nbsp;&nbsp;&nbsp;
 			<button id="unlinkBtn" onclick="unlinkAll()"><img id="imageUnlink" width=32 height=32 src="./image/WpfDisconnected.svg"></button>&nbsp;&nbsp;&nbsp;
-			<button id="xferBtn" onclick="Xfer()"><img id="imageXfer" width=32 height=32 src="./image/IconParkOutlineCommunication.svg"></button>&nbsp;&nbsp;&nbsp;
+			<button id="xferBtn" onclick="Init_Node_Info()"><img id="imageXfer" width=32 height=32 src="./image/IconParkOutlineCommunication.svg"></button>&nbsp;&nbsp;&nbsp;
 			<button id="resumeBtn" onclick="resumeConn()"><img id="image" width=32 height=32 src="./image/MaterialSymbolsRestartAltRounded.svg"></button>&nbsp;&nbsp;&nbsp;
 			<button id="oprModeBtn" onclick="changeMode()"><img id="imagMode" width=32 height=32 src="./image/IconoirNetworkReverse.svg"></button>&nbsp;&nbsp;&nbsp;
-			<button id="readMeBtn" onclick="readMe()"><img id="imagReadme" width=32 height=32 src="./image/OcticonBook.svg"></button>&nbsp;&nbsp;&nbsp;&nbsp;
-			<button id="bleBtn" onclick="readMe()"><img id="imgBle" width=32 height=32 src="./image/MaterialSymbolsBluetooth.svg"></button>
+			<button id="readMeBtn" onclick="sendMessage()"><img id="imagReadme" width=32 height=32 src="./image/OcticonBook.svg"></button>&nbsp;&nbsp;&nbsp;&nbsp;
+			<button id="bleBtn" onclick="linkBluetoothClick()"><img id="imgBle" width=32 height=32 src="./image/MdiBluetoothOff.svg"></button>
 		</center>
 		
 		<center>
@@ -134,22 +134,123 @@
 		</center>
 		
 		<script type="text/javascript">
+			let device;
+			let notifyCharacteristic;
+			let writeCharacteristic;
+
+			const serviceUuid = '30774092-df5b-4359-be9e-824c3bf779ac';
+			const writeCharacteristicUuid = 'e36fe48e-950b-4d44-b208-c5a3b0448634';
+			const notifyCharacteristicUuid = '4e68336a-2a37-497a-a801-fe20000e9fc1';
+
+			const messageStore = {};
+
+			var drt1json,
+				drt2json,
+				drt3json,
+				drt4json,
+				drt5json;
 		
+			var	enConnBLE = 1,
+				connStatus = 0;
+			const connDeviceName = "cFAN_ROOT";
+
+			/*** DEFAULT information for cFAN ***/
+			const cFAN_GW_DFT	  = {DeviceName: "cFAN_DISCOVERY"};
+
+			const cFAN_ROOT_DFT   = {DeviceName: "cFAN_ROOT",
+									 DeviceUUID: "0000000-0000-0000-0000-000000000000",
+									 DeviceLoc : "DFM-UUU"};
+			
+			const cFAN_LB_DFT = 	{DeviceName: "cFAN_LB",
+									 DeviceUUID: "0000000-0000-0000-0000-000000000000",
+									 DeviceLoc : "DFM-UUU"};
+			
+			const cFAN_NODE_1_DFT = {DeviceName: "cFAN_NODE_1",
+									 DeviceUUID: "0000000-0000-0000-0000-000000000000",
+									 DeviceLoc : "DFM-UUU"};
+
+			const cFAN_NODE_2_DFT = {DeviceName: "cFAN_NODE_2",
+									 DeviceUUID: "0000000-0000-0000-0000-000000000000",
+									 DeviceLoc : "DFM-UUU"};
+
+			const cFAN_NODE_3_DFT = {DeviceName: "cFAN_NODE_3",
+									 DeviceUUID: "0000000-0000-0000-0000-000000000000",
+									 DeviceLoc : "DFM-UUU"};
+
+			/*** Chip information for cFAN ***/	
+			const cFAN_GW_INFO	   = {DeviceName: "cFAN_DISCOVERY"};
+
+			const cFAN_ROOT_INFO   = {DeviceName: "cFAN_ROOT",
+									 DeviceUUID : "98007e9c-48d4-4522-93b1-05044c7e756b",
+									 DeviceLoc  : "DFM-7084"};
+			
+			const cFAN_LB_INFO 	   = {DeviceName: "cFAN_LB",
+									 DeviceUUID : "155b666f-bb69-42a6-ac5c-bddcc141c8ed",
+									 DeviceLoc  : "NDW-8864"};
+			
+			const cFAN_NODE_1_INFO = {DeviceName: "cFAN_NODE_1",
+									 DeviceUUID : "aea1770b-eae4-410d-bb65-8d4b3cabddaa",
+									 DeviceLoc  : "EMG-5760"};
+
+			const cFAN_NODE_2_INFO = {DeviceName: "cFAN_NODE_2",
+									 DeviceUUID : "565d421d-5107-4c89-9107-a718f986f63f",
+									 DeviceLoc  : "TMB-7052"};
+
+			const cFAN_NODE_3_INFO = {DeviceName: "cFAN_NODE_3",
+									 DeviceUUID : "9a0b9a6b-7c49-4d0e-b610-fab91733eab8",
+									 DeviceLoc  : "SXC-4043"};
+
 			var	netMode = false,
 				uploadCnt = 0,
 				downloadCnt = 0;
 				netmodeEdge = 0;
 				updnMode = 1;
-				
+
+			var GW_INFO = {
+								DeviceName : "",
+								DeviceUUID : "",
+								DeviceLoc  : ""
+							};
+			
+			var ROOT_INFO = {
+								DeviceName : "",
+								DeviceUUID : "",
+								DeviceLoc  : ""
+							};
+
+			var LB_INFO = {
+								DeviceName : "",
+								DeviceUUID : "",
+								DeviceLoc  : ""
+							};
+
+			var NODE1_INFO = {
+								DeviceName : "",
+								DeviceUUID : "",
+								DeviceLoc  : ""
+							};	
+			
+			var NODE2_INFO = {
+								DeviceName : "",
+								DeviceUUID : "",
+								DeviceLoc  : ""
+							};
+
+			var NODE3_INFO = {
+								DeviceName : "",
+								DeviceUUID : "",
+								DeviceLoc  : ""
+							};
+
 			// link status of devices
-			var gtwLink   = {linkNode: "drt1", linkStatus: true,  lineInx: 0,  imgInxS:0, imgInxE: 1},
-				drt1Link  = {linkNode: "drt2", linkStatus: true,  lineInx: 1,  imgInxS:1, imgInxE: 2},
-				drt2Link1 = {linkNode: "drt3", linkStatus: true, lineInx: 2, imgInxS:2, imgInxE: 3},
-				drt2Link2 = {linkNode: "drt4", linkStatus: true, lineInx: 3, imgInxS:2, imgInxE: 4},
-				drt2Link3 = {linkNode: "drt5", linkStatus: true, lineInx: 4, imgInxS:2, imgInxE: 5};
+			var GWLinkRT = {linkNode: "G-R",   linkStatus: true, lineInx: 0, imgInxS:0, imgInxE: 1},
+				RTLinkLB = {linkNode: "R-LB",  linkStatus: true, lineInx: 1, imgInxS:1, imgInxE: 2},
+				LBLinkN1 = {linkNode: "LB-N1", linkStatus: true, lineInx: 2, imgInxS:2, imgInxE: 3},
+				N1LinkN2 = {linkNode: "N1-N2", linkStatus: true, lineInx: 3, imgInxS:3, imgInxE: 4},
+				N2LinkN3 = {linkNode: "N2-N3", linkStatus: true, lineInx: 4, imgInxS:4, imgInxE: 5};
 			
 			// linked status of devices
-			var gtwOnline  = false
+			var gtwOnline  = false,
 				drt1Online = false,
 				drt2Online = false,
 				drt3Online = false,
@@ -192,8 +293,8 @@
 				drt1p = {x: 200, y: 221, w: 48, h: 48},
 				drt2p = {x: 200, y: 376, w: 48, h: 48},
 				drt3p = {x:  98, y: 507, w: 48, h: 48},
-				drt4p = {x: 302, y: 507, w: 48, h: 48},
-				drt5p = {x: 200, y: 507, w: 48, h: 48},
+				drt4p = {x: 200, y: 507, w: 48, h: 48},
+				drt5p = {x: 302, y: 507, w: 48, h: 48},
 				
 				// image placed location and size for thin color
 				gtwThin  = {inx: img,  x:  gtwp.x, y:  gtwp.y, w: gtwp.w,  h:  gtwp.h},
@@ -261,74 +362,70 @@
 				
 				// connection line of start and end
 				gtwBottomP  = {x: gtwp.x+(gtwp.w/2),   y: (gtwp.y+gtwp.h)},
-				drt1TopP    = {x: drt1p.x+(drt1p.w/2), y:  drt1p.y},
-				drt1BottomP = {x: drt1p.x+(drt1p.w/2), y: (drt1p.y+drt1p.h)},
-				drt2TopP    = {x: drt2p.x+(drt2p.w/2), y: (drt2p.y)},
-				drt2BottomP = {x: drt2p.x+(drt2p.w/2), y: (drt2p.y+drt2p.h)},
-				drt3TopP    = {x: drt3p.x+(drt3p.w/2), y:  drt3p.y},
-				drt4TopP    = {x: drt4p.x+(drt4p.w/2), y:  drt4p.y},
-				drt5TopP    = {x: drt5p.x+(drt5p.w/2), y:  drt5p.y},
+				RootTopP    = {x: drt1p.x+(drt1p.w/2), y:  drt1p.y},
+				RootBottomP = {x: drt1p.x+(drt1p.w/2), y: (drt1p.y+drt1p.h)},
+				LBTopP    	= {x: drt2p.x+(drt2p.w/2), y: (drt2p.y)},
+				LBBottomP 	= {x: drt2p.x+15,		   y: (drt2p.y+drt2p.h)},
+				N1TopP   	= {x: drt3p.x+(drt3p.w/2), y:  drt3p.y},
+				N1RightP 	= {x: drt3p.x+(drt3p.w),   y: (drt3p.y+drt3p.h/2)},
+				N2LeftP  	= {x: drt4p.x, 		  	   y: (drt4p.y+drt4p.h/2)},
+				N2RightP 	= {x: drt4p.x+(drt4p.w),   y: (drt4p.y+drt4p.h/2)},
+				N3LeftP  	= {x: drt5p.x, 			   y: (drt5p.y+drt5p.h/2)},
 				
 				// image text
 				imgTextFont = "11pt NSimSun",
-				gtwText     = "Field Gateway",
-				drt1Text1   = "DUT",
-				drt1Text2   = "DRT 1",
-				drt2Text1   = "Local Base",
-				drt2Text2   = "DRT 2",
-				drt3Text    = "DRT 3",
-				drt4Text    = "DRT 4",
-				drt5Text    = "DRT 5",
+				gtwText    = "APP",
+				RootText1  = "ROOT",
+				RootText2  = "cFAN_ROOT",
+				LBText1    = "Local Base",
+				LBText2    = "cFAN_LB",
+				Node1Text  = "cFAN_NODE_1",
+				Node2Text  = "cFAN_NODE_2",
+				Node3Text  = "cFAN_NODE_3",
 				
 				// image text position
-				gtwTextP   = {text: gtwText,    x: gtwp.x-15,  y: gtwp.y-7},
-				drt1Text1P = {text: drt1Text1,  x: drt1p.x+38, y: drt1p.y-18},
-				drt1Text2P = {text: drt1Text2,  x: drt1p.x+38, y: drt1p.y-1},
-				drt2Text1P = {text: drt2Text1,  x: drt2p.x+38, y: drt2p.y-18},
-				drt2Text2P = {text: drt2Text2,  x: drt2p.x+38, y: drt2p.y-1},
-				drt3TextP  = {text: drt3Text,   x: drt3p.x+3,  y: drt3p.y+66},
-				drt4TextP  = {text: drt4Text,   x: drt4p.x+3,  y: drt4p.y+66},
-				drt5TextP  = {text: drt5Text,   x: drt5p.x+3,  y: drt3p.y+66},
+				gtwTextP    = {text: gtwText,    x: gtwp.x-15,  y: gtwp.y-7},
+				RootText1P  = {text: RootText1,  x: drt1p.x+38, y: drt1p.y-18},
+				RootText2P  = {text: RootText2,  x: drt1p.x+38, y: drt1p.y-1},
+				LBText1P    = {text: LBText1, 	 x: drt2p.x+38, y: drt2p.y-18},
+				LBText2P    = {text: LBText2, 	 x: drt2p.x+38, y: drt2p.y-1},
+				Node1TextP  = {text: Node1Text,  x: drt3p.x-20,  y: drt3p.y+66},
+				Node2TextP  = {text: Node2Text,  x: drt4p.x-20,  y: drt4p.y+66},
+				Node3TextP  = {text: Node3Text,  x: drt5p.x-20,  y: drt3p.y+66},
 								
 				// initial image tooltip text
-				gtwtext  = "Field Gateway",
-				
-				drt1text = "Device Name:DRT1 <br>" + 
-							"Device UUID:<br>" + "&nbsp f15e5f6e-909f-<br>" +
-							"&nbsp 4a07-9e78-<br>" + "&nbsp d66e7a2b55d6<br>" + 
-							"Device Location:<br>" + "&nbsp HLTPE-12RDP-33837992",
-				
-				drt2text = "Device Name:DRT2 <br>" + 
-							"Device UUID:<br>" + "&nbsp ec7d9aa9-e5ee-<br>" +
-							"&nbsp 4ca9-9dc6-<br>" + "&nbsp 7310fadf3937<br>" + 
-							"Device Location:<br>" + "&nbsp HLTPE-12RDP-83743235",	
-							
-				drt3text = "Device Name:DRT3 <br>" + 
-							"Device UUID:<br>" + "&nbsp 5782dfc5-b976-<br>" +
-							"&nbsp 4f36-b56b-<br>" + "&nbsp 402c8e2a7fdf<br>" + 
-							"Device Location:<br>" + "&nbsp HLTPE-32MRP-32783454",
-							
-				drt4text = "Device Name:DRT4 <br>" + 
-							"Device UUID:<br>" + "&nbsp bb57bed2-37b9-<br>" +
-							"&nbsp 4de0-96fc-<br>" + "&nbsp 23e1932097a4<br>" + 
-							"Device Location:<br>" + "&nbsp HLTPE-11SDM-87237575",
-							
-				drt5text = "Device Name:DRT5 <br>" + 
-							"Device UUID:<br>" + "&nbsp 44497e1b-cb02-<br>" +
-							"&nbsp 4a0d-aefa-<br>" + "&nbsp cad6ba1d1643<br>" + 
-							"Device Location:<br>" + "&nbsp HLTPE-05FNC-42252766",	
-	
-			// create a tool-tip instance:
-				tgtw  = new ToolTip(myCanvas, gtwThin,  gtwtext,  120, 5000),				
+				gtwtext  = "Device Name: APP",
+
+				drt1text = "Device Name:"         + ROOT_INFO.DeviceName + "<br>" +
+						   "Device UUID:<br>"     + ROOT_INFO.DeviceUUID + "<br>" +
+						   "Device Location:<br>" + ROOT_INFO.DeviceLoc,
+
+				drt2text = "Device Name:"         + LB_INFO.DeviceName + "<br>" +
+						   "Device UUID:<br>"     + LB_INFO.DeviceUUID + "<br>" +
+						   "Device Location:<br>" + LB_INFO.DeviceLoc,
+
+				drt3text = "Device Name:"         + NODE1_INFO.DeviceName + "<br>" +
+						   "Device UUID:<br>"     + NODE1_INFO.DeviceUUID + "<br>" +
+						   "Device Location:<br>" + NODE1_INFO.DeviceLoc,
+
+				drt4text = "Device Name:"         + NODE2_INFO.DeviceName + "<br>" +
+						   "Device UUID:<br>"     + NODE2_INFO.DeviceUUID + "<br>" +
+						   "Device Location:<br>" + NODE2_INFO.DeviceLoc,
+
+				drt5text = "Device Name:"         + NODE3_INFO.DeviceName + "<br>" +
+						   "Device UUID:<br>"     + NODE3_INFO.DeviceUUID + "<br>" +
+						   "Device Location:<br>" + NODE3_INFO.DeviceLoc,
+			
+			// create a tool-tip instance:		
+				tgtw  = new ToolTip(myCanvas, gtwThin,  gtwtext,  200, 5000),				
 				tdrt1 = new ToolTip(myCanvas, drt1Thin, drt1text, 180, 5000),
 				tdrt2 = new ToolTip(myCanvas, drt2Thin, drt2text, 180, 5000),
 				tdrt3 = new ToolTip(myCanvas, drt3Thin, drt3text, 180, 5000),
 				tdrt4 = new ToolTip(myCanvas, drt4Thin, drt4text, 180, 5000),
 				tdrt5 = new ToolTip(myCanvas, drt5Thin, drt5text, 180, 5000);
-						
-			// The Tool-Tip instance:
-			function ToolTip(canvas, region, text, width, timeout) {
 
+			// The Tool-Tip instance:
+			function ToolTip(canvas, region, text, width, timeout) {				
 				var me = this,                                // self-reference for event handlers
 				    div = document.createElement("div"),      // the tool-tip div
 				    parent = canvas.parentNode,               // parent node for canvas
@@ -341,9 +438,13 @@
 			  
 				// show the tool-tip
 				this.show = function(pos) {
-					if (!visible) {                             // ignore if already shown (or reset time)
+					if (!visible) {
+						var str;
+						str = updateTooltipText(region);
+						div.innerHTML = str;
+									
 						visible = true;                           // lock so it's only shown once
-						setDivPos(pos);                           // set position
+						setDivPos(pos);				              // set position												
 						parent.appendChild(div);                  // add to parent of canvas
 						setTimeout(hide, timeout);                // timeout for hide
 					}
@@ -351,12 +452,14 @@
 			  
 				// hide the tool-tip
 				function hide() {
-					visible = false;                            // hide it after timeout
-					parent.removeChild(div);                    // remove from DOM
+					if(visible) {
+						visible = false;                            // hide it after timeout					
+						parent.removeChild(div);                    // remove from DOM
+					}
 				}
 
 				// check mouse position, add limits as wanted... just for example:
-				function check(e) {
+				function check(e) {					
 					var	pos = getPos(e),
 						posAbs = {x: e.clientX-80, y: e.clientY},
 						index = pos2Index(region),							
@@ -441,12 +544,76 @@
 					}
 				}
 			  
+				function updateTooltipText(pos) {
+					var text;
+					var index = pos2Index(pos);				
+					switch(index) {
+						case 0:
+							text = "Device Name:" + GW_INFO.DeviceName;
+							return text;
+
+						case 1:
+							text = "Device Name:"      + ROOT_INFO.DeviceName + "<br>" +
+								"Device UUID:<br>"     + ROOT_INFO.DeviceUUID + "<br>" +
+								"Device Location:<br>" + ROOT_INFO.DeviceLoc;
+							return text;							
+
+						case 2:
+							text = "Device Name:"      + LB_INFO.DeviceName + "<br>" +
+								"Device UUID:<br>"     + LB_INFO.DeviceUUID + "<br>" +
+								"Device Location:<br>" + LB_INFO.DeviceLoc;
+							return text;
+
+						case 3:
+							text = "Device Name:"      + NODE1_INFO.DeviceName + "<br>" +
+								"Device UUID:<br>"     + NODE1_INFO.DeviceUUID + "<br>" +
+								"Device Location:<br>" + NODE1_INFO.DeviceLoc;
+							return text;
+
+						case 4:
+							text = "Device Name:"      + NODE2_INFO.DeviceName + "<br>" +
+								"Device UUID:<br>"     + NODE2_INFO.DeviceUUID + "<br>" +
+								"Device Location:<br>" + NODE2_INFO.DeviceLoc;
+							return text;
+
+						case 5:
+							text = "Device Name:"      + NODE3_INFO.DeviceName + "<br>" +
+								"Device UUID:<br>"     + NODE3_INFO.DeviceUUID + "<br>" +
+								"Device Location:<br>" + NODE3_INFO.DeviceLoc;	
+							return text;
+					}
+				}
+
 				// we need to use shared event handlers:
 				//canvas.addEventListener("mousemove", check);
 				//canvas.addEventListener("mousedown", check);
 				canvas.addEventListener("click", check);				
-			}	
-					
+			}							
+
+			function Init_Node_Info() {
+				GW_INFO.DeviceName = cFAN_GW_DFT.DeviceName;
+
+				ROOT_INFO.DeviceName = cFAN_ROOT_DFT.DeviceName;
+				ROOT_INFO.DeviceUUID = cFAN_ROOT_DFT.DeviceUUID;
+				ROOT_INFO.DeviceLoc  = cFAN_ROOT_DFT.DeviceLoc;
+
+				LB_INFO.DeviceName = cFAN_LB_DFT.DeviceName;
+				LB_INFO.DeviceUUID = cFAN_LB_DFT.DeviceUUID;
+				LB_INFO.DeviceLoc  = cFAN_LB_DFT.DeviceLoc;
+
+				NODE1_INFO.DeviceName = cFAN_NODE_1_DFT.DeviceName;
+				NODE1_INFO.DeviceUUID = cFAN_NODE_1_DFT.DeviceUUID;
+				NODE1_INFO.DeviceLoc  = cFAN_NODE_1_DFT.DeviceLoc;
+
+				NODE2_INFO.DeviceName = cFAN_NODE_2_DFT.DeviceName;
+				NODE2_INFO.DeviceUUID = cFAN_NODE_2_DFT.DeviceUUID;
+				NODE2_INFO.DeviceLoc  = cFAN_NODE_2_DFT.DeviceLoc;
+
+				NODE3_INFO.DeviceName = cFAN_NODE_3_DFT.DeviceName;
+				NODE3_INFO.DeviceUUID = cFAN_NODE_3_DFT.DeviceUUID;
+				NODE3_INFO.DeviceLoc  = cFAN_NODE_3_DFT.DeviceLoc;
+			}
+
 			function drawImgThin(imgInx) {
 				drawImgBlank(imgInx);
 				switch(imgInx) {
@@ -769,64 +936,52 @@
 			function rebuildConn() {
 				if(gtwSelected.selected) {
 					if(gtwSelected.conn) {
-						gtwLink.linkStatus = true;
+						GWLinkRT.linkStatus = true;
 					}
 					else if(!gtwSelected.conn) {
-						gtwLink.linkStatus = false;
+						GWLinkRT.linkStatus = false;
 					}
 					redrawImgLine();
 				}
 				else if(drt1Selected.selected) {
 					if(drt1Selected.conn) {
-						drt1Link.linkStatus = true;
+						RTLinkLB.linkStatus = true;
 					}
 					else {
-						drt1Link.linkStatus = false;
+						RTLinkLB.linkStatus = false;
 					}
 					redrawImgLine();					
 				}
 				
 				else if(drt2Selected.selected) {
 					if(drt2Selected.conn) {
-						drt2Link1.linkStatus = true;
-						drt2Link2.linkStatus = true;
-						drt2Link3.linkStatus = true;
+						LBLinkN1.linkStatus = true;						
 					}
 					else {
-						drt2Link1.linkStatus = false;
-						drt2Link2.linkStatus = false;
-						drt2Link3.linkStatus = false;
+						LBLinkN1.linkStatus = false;						
 					}
 					redrawImgLine();					
 				}
 				
 				else if(drt3Selected.selected) {
 					if(drt3Selected.conn) {
-						drt2Link1.linkStatus = true;
+						N1LinkN2.linkStatus = true;
 					}
 					else {
-						drt2Link1.linkStatus = false;
+						N1LinkN2.linkStatus = false;
 					}
 					redrawImgLine();					
 				}
+
 				else if(drt4Selected.selected) {
 					if(drt4Selected.conn) {
-						drt2Link2.linkStatus = true;
+						N2LinkN3.linkStatus = true;
 					}
 					else {
-						drt2Link2.linkStatus = false;
+						N2LinkN3.linkStatus = false;
 					}
 					redrawImgLine();					
-				}
-				else if(drt5Selected.selected) {
-					if(drt5Selected.conn) {
-						drt2Link3.linkStatus = true;
-					}
-					else {
-						drt2Link3.linkStatus = false;
-					}
-					redrawImgLine();					
-				}
+				}				
 			}
 			
 			function updateDrtData(pos) {
@@ -852,7 +1007,7 @@
 			function getDvcOnlineStatus(index) {
 				switch (index) {
 					case 0:
-						if(gtwLink.linkStatus) {
+						if(GWLinkRT.linkStatus) {
 							gtwOnline = true;
 						}
 						else {
@@ -861,7 +1016,7 @@
 						return gtwOnline;
 						
 					case 1:
-						if(drt1Link.linkStatus) {
+						if(RTLinkLB.linkStatus) {
 							drt1Online = true;
 						}
 						else {
@@ -870,16 +1025,16 @@
 						return drt1Online;
 						
 					case 2:
-						if(drt2Link1.linkStatus || drt2Link2.linkStatus || drt2Link3.linkStatus) {
+						if(LBLinkN1.linkStatus) {
 							drt2Online = true;
 						}
-						if(!drt2Link1.linkStatus && !drt2Link2.linkStatus && !drt2Link3.linkStatus) {
+						else {
 							drt2Online = false;
 						}
 						return drt2Online;
 						
 					case 3:
-						if(drt2Link1.linkStatus) {
+						if(N1LinkN2.linkStatus) {
 							drt3Online = true;
 						}
 						else {
@@ -888,22 +1043,13 @@
 						return drt3Online;
 						
 					case 4:
-						if(drt2Link2.linkStatus) {
+						if(N2LinkN3.linkStatus) {
 							drt4Online = true;
 						}
 						else {
 							drt4Online = false;
 						}
-						return drt4Online;
-						
-					case 5:
-						if(drt2Link3.linkStatus) {
-							drt5Online = true;
-						}
-						else {
-							drt5Online = false;
-						}
-						return drt5Online;
+						return drt4Online;											
 				}
 			}
 			
@@ -942,19 +1088,19 @@
 			function linkLine(lineInx) {
 				switch (lineInx) {					
 					case 0:
-						drawLine(gtwBottomP,drt1TopP);
+						drawLine(gtwBottomP,RootTopP);
 						break;
 					case 1:
-						drawLine(drt1BottomP,drt2TopP);
+						drawLine(RootBottomP,LBTopP);
 						break;
 					case 2:
-						drawLine(drt2BottomP,drt3TopP);
+						drawLine(LBBottomP,N1TopP);
 						break;
 					case 3:
-						drawLine(drt2BottomP,drt4TopP);
+						drawLine(N1RightP,N2LeftP);
 						break;
 					case 4:
-						drawLine(drt2BottomP,drt5TopP);
+						drawLine(N2RightP,N3LeftP);
 						break;
 				}			
 			}
@@ -962,108 +1108,101 @@
 			function unlinkLine(lineInx) {
 				switch (lineInx) {					
 					case 0:
-						clearLine(gtwBottomP,drt1TopP);
+						clearLine(gtwBottomP,RootTopP);
 						break;
 					case 1:
-						clearLine(drt1BottomP,drt2TopP);
+						clearLine(RootBottomP,LBTopP);
 						break;
 					case 2:
-						clearLine(drt2BottomP,drt3TopP);
+						clearLine(LBBottomP,N1TopP);
 						break;
 					case 3:
-						clearLine(drt2BottomP,drt4TopP);
+						clearLine(N1RightP,N2LeftP);
 						break;
 					case 4:
-						clearLine(drt2BottomP,drt5TopP);
-						break;				
+						clearLine(N2RightP,N3LeftP);
+						break;			
 				}			
 			}									
 			
 			// put device name
 			function putDvcName() {
 				putText(gtwTextP,imgTextFont);
-				putText(drt1Text1P,imgTextFont);
-				putText(drt1Text2P,imgTextFont);
-				putText(drt2Text1P,imgTextFont);
-				putText(drt2Text2P,imgTextFont);
-				putText(drt3TextP,imgTextFont);
-				putText(drt4TextP,imgTextFont);
-				putText(drt5TextP,imgTextFont);
+				putText(RootText1P,imgTextFont);
+				putText(RootText2P,imgTextFont);
+				putText(LBText1P,imgTextFont);
+				putText(LBText2P,imgTextFont);
+				putText(Node1TextP,imgTextFont);
+				putText(Node2TextP,imgTextFont);
+				putText(Node3TextP,imgTextFont);
 			}
 
 			// put link line and image from link status of devices
 			function redrawImgLine() {
 				clearCanvas();
 				putDvcName();
-				if(!gtwLink.linkStatus) {
-					unlinkLine(gtwLink.lineInx);
-					drawImgThin(gtwLink.imgInxS);
+				if(!GWLinkRT.linkStatus) {
+					unlinkLine(GWLinkRT.lineInx);
+					drawImgThin(GWLinkRT.imgInxS);
 					gtwImgThickType = false;
 				}
 				else {
-					linkLine(gtwLink.lineInx);	
-					drawImgThick(gtwLink.imgInxS);	
+					linkLine(GWLinkRT.lineInx);	
+					drawImgThick(GWLinkRT.imgInxS);	
 					gtwImgThickType = true;			
 				}
 				
-				if(!drt1Link.linkStatus) {
-					unlinkLine(drt1Link.lineInx);
-					if(!gtwLink.linkStatus) {
-						drawImgThin(drt1Link.imgInxS);
+				if(!RTLinkLB.linkStatus) {
+					unlinkLine(RTLinkLB.lineInx);
+					if(!GWLinkRT.linkStatus) {
+						drawImgThin(RTLinkLB.imgInxS);
 						drt1ImgThickType = false;
 					}
 					else {
-						drawImgThick(drt1Link.imgInxS);
+						drawImgThick(RTLinkLB.imgInxS);
 						drt1ImgThickType = true;
 					}
 				}
 				else {
-					linkLine(drt1Link.lineInx);	
-					drawImgThick(drt1Link.imgInxS);
+					linkLine(RTLinkLB.lineInx);	
+					drawImgThick(RTLinkLB.imgInxS);
 					drt1ImgThickType = true;
 				}
 			
-				if(!drt2Link1.linkStatus) {
-					unlinkLine(drt2Link1.lineInx);
-					drawImgThin(drt2Link1.imgInxE)
+				if(!LBLinkN1.linkStatus) {
+					unlinkLine(LBLinkN1.lineInx);
+					drawImgThin(LBLinkN1.imgInxS)
 					drt3ImgThickType = false;
 				}
 				else {
-					linkLine(drt2Link1.lineInx);
-					drawImgThick(drt2Link1.imgInxE)
+					linkLine(LBLinkN1.lineInx);
+					drawImgThick(LBLinkN1.imgInxS)
 					drt3ImgThickType = true;
 				}			
 				
-				if(!drt2Link2.linkStatus) {
-					unlinkLine(drt2Link2.lineInx);
-					drawImgThin(drt2Link2.imgInxE)
+				if(!N1LinkN2.linkStatus) {
+					unlinkLine(N1LinkN2.lineInx);
+					drawImgThin(N1LinkN2.imgInxS)
 					drt4ImgThickType = false;
 				}
 				else {
-					linkLine(drt2Link2.lineInx);
-					drawImgThick(drt2Link2.imgInxE)
+					linkLine(N1LinkN2.lineInx);
+					drawImgThick(N1LinkN2.imgInxS)
 					drt4ImgThickType = true;
 				}
 				
-				if(!drt2Link3.linkStatus) {
-					unlinkLine(drt2Link3.lineInx);
-					drawImgThin(drt2Link3.imgInxE)
+				if(!N2LinkN3.linkStatus) {
+					unlinkLine(N2LinkN3.lineInx);
+					drawImgThin(N2LinkN3.imgInxS)
+					drawImgThin(N2LinkN3.imgInxE)
 					drt5ImgThickType = false;
 				}
 				else {
-					linkLine(drt2Link3.lineInx);
-					drawImgThick(drt2Link3.imgInxE)
+					linkLine(N2LinkN3.lineInx);
+					drawImgThick(N2LinkN3.imgInxS)
+					drawImgThick(N2LinkN3.imgInxE)
 					drt5ImgThickType = true;
-				}
-
-				if(drt2Link1.linkStatus || drt2Link2.linkStatus || drt2Link3.linkStatus || drt1Link.linkStatus) {
-					drawImgThick(drt2Link1.imgInxS)
-					drt2ImgThickType = true;
-				}
-				else {
-					drawImgThin(drt2Link1.imgInxS)
-					drt2ImgThickType = false;
-				}
+				}				
 			}
 			
 			function getImagThickStatus(index) {
@@ -1084,25 +1223,28 @@
 			}
 			
 			function linkAll() {
-				gtwLink.linkStatus = true;
-				drt1Link.linkStatus = true;
-				drt2Link1.linkStatus = true;
-				drt2Link2.linkStatus = true;
-				drt2Link3.linkStatus = true;
+				GWLinkRT.linkStatus = true;
+				RTLinkLB.linkStatus = true;
+				LBLinkN1.linkStatus = true;
+				N1LinkN2.linkStatus = true;
+				N2LinkN3.linkStatus = true;
 				redrawImgLine();
 			}
 			
 			function unlinkAll() {
-				gtwLink.linkStatus = false;
-				drt1Link.linkStatus = false;
-				drt2Link1.linkStatus = false;
-				drt2Link2.linkStatus = false;
-				drt2Link3.linkStatus = false;
+				GWLinkRT.linkStatus = false;
+				RTLinkLB.linkStatus = false;
+				LBLinkN1.linkStatus = false;
+				N1LinkN2.linkStatus = false;
+				N2LinkN3.linkStatus = false;
 				redrawImgLine();
 			}
 			
 			function Xfer() {
-				
+				const obj = JSON.parse(cFAN_ROOT_INFO);				
+				test1.innerHTML = obj.DeviceName;
+				test2.innerHTML = obj.DeviceUUID;
+				test3.innerHTML = obj.DeviceLoc;
 			}
 			
 			function resumeConn() {
@@ -1153,22 +1295,165 @@
 				updnMode = 1;
 			}
 			
+			function getRoutingMap() {
+				fetch("http://118.163.52.188:8080/api/routing-map", {
+					method: 'GET'
+				})
+				.then(response => response.json())
+				.then(jsonData => {
+					console.log(jsonData);
+					drt1json = JSON.stringify(jsonData, null, 2);
+					test1.innerHTML = drt1json;
+				});				
+			}			
+			
+			function postRoutingMap() {
+				fetch('https://httpbin.org/post', {
+					method: 'POST',
+					headers: {
+					'Accept': 'application/json, text/plain, */*',
+					'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({a: 7, str: 'Some string: &=&'})
+				})
+				.then(res => res.json())
+				.then(res => console.log(res));
+			}
+			
+
 			window.onload=function()
 			{
 				var el=document.getElementById('xferBtn');
 				el.onclick=function(){
 					var my_text=prompt('Enter message here');
-					if(my_text) alert(my_text);
+					if(my_text) alert(my_text);					
 				}
 			}
 			
-			img.addEventListener("load", (e) => {						  
-			  redrawImgLine();
-			  changeMode();
+			img.addEventListener("load", (e) => {										  
+				redrawImgLine();
+			  	changeMode();
+				Init_Node_Info();			  
 			});	
 			
 		</script>
-			
+
+		<script>			
+			async function linkBluetoothClick() {
+				
+				if(enConnBLE == 1) {
+					try {
+						device = await navigator.bluetooth.requestDevice({
+						//filters: [{services: [serviceUuid]}],
+						filters: [{name: connDeviceName}],
+						//acceptAllDevices: true,
+						optionalServices: [serviceUuid]		  
+						});
+						device.addEventListener('gattserverdisconnected', onDisconnected);
+
+						const server = await device.gatt.connect();
+						const service = await server.getPrimaryService(serviceUuid);
+						notifyCharacteristic = await service.getCharacteristic(notifyCharacteristicUuid);
+						writeCharacteristic = await service.getCharacteristic(writeCharacteristicUuid);
+
+						await notifyCharacteristic.startNotifications();
+						notifyCharacteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
+						imgBle.src="./image/FoundationBluetooth.svg";
+						enConnBLE = 0;						
+						console.log("connected")
+					} catch (error) {
+						console.error('Error:', error);
+					}
+				}
+				else {
+					disconnCmd = 1;
+				}														
+  			}
+
+			function onDisconnected() {
+				console.log("disconnected")
+				imgBle.src="./image/MdiBluetoothOff.svg";
+				disconnCmd = 0;
+				enConnBLE = 1;
+				//document.getElementById('status').innerText = 'Status: Disconnected';
+			}
+
+			async function sendMessage() {			
+				if (writeCharacteristic) {
+					//const message = document.getElementById('message').value;
+					const message  = '1234';
+					const encoder = new TextEncoder('utf-8');
+					const data = encoder.encode(message);
+					try {
+						await writeCharacteristic.writeValue(data);	
+						console.log('Message sent');
+					} catch (error) {
+						console.error('Failed to send message', error);
+					}
+				} else {
+					console.error('Not connected to a device');
+				}
+			}
+
+			function handleCharacteristicValueChanged(event) {
+				const timestamp = formatDatetime(new Date());
+				const value = event.target.value;
+				const decoder = new TextDecoder('utf-8');
+				const message = decoder.decode(value);
+				console.log(message);
+
+				// update new message from notification of cFAN_ROOT
+				//var msgInx = parseMsgFrom(message);
+				//saveMsg2Info(msgInx);
+				//ROOT_INFO.DeviceLoc = message;
+
+
+
+
+				
+				if(disconnCmd == 1) {
+					if (device.gatt.connected) {
+						device.gatt.disconnect();
+						imgBle.src="./image/MdiBluetoothOff.svg";
+						disconnCmd = 0;
+						enConnBLE = 1;
+					}				
+				}
+			}
+
+			function messageHandler(id, data) {
+				if (!messageStore[id]) {
+					messageStore[id] = { message: '', reassembled: true };
+				}
+
+				const messageInfo = messageStore[id];
+
+				if (data === "SOM") {
+					if (messageInfo.reassembled) {
+					messageInfo.reassembled = false;
+					messageInfo.message = '';
+					}
+				} else if (data === "EOM") {
+					if (!messageInfo.reassembled) {
+					messageInfo.reassembled = true;
+					}
+				} else if (!messageInfo.reassembled) {
+					messageInfo.message += data;
+				}
+			}
+
+			function formatDatetime(date) {
+				const year = date.getFullYear();
+				const month = (date.getMonth() + 1).toString().padStart(2, '0');
+				const day = date.getDate().toString().padStart(2, '0');
+				const hours = date.getHours().toString().padStart(2, '0');
+				const minutes = date.getMinutes().toString().padStart(2, '0');
+				const seconds = (date.getSeconds() + date.getMilliseconds() / 1000).toFixed(2).padStart(5, '0');
+				const formattedDatetime = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}Z`;
+
+				return formattedDatetime
+			}		
+		</script>
 	</body>
 
 </html>
