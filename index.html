@@ -107,12 +107,12 @@
 		<label id="test4"></label>
 		
 		<center>			
-			<button id="linkBtn" onclick="showOneNodeImg()"><img id="imageLink" width=32 height=32 src="./image/WpfConnected.svg"></button>&nbsp;&nbsp;&nbsp;
-			<button id="unlinkBtn" onclick="drawImgThin(2)"><img id="imageUnlink" width=32 height=32 src="./image/WpfDisconnected.svg"></button>&nbsp;&nbsp;&nbsp;
-			<button id="xferBtn" onclick="Init_Node_Info()"><img id="imageXfer" width=32 height=32 src="./image/IconParkOutlineCommunication.svg"></button>&nbsp;&nbsp;&nbsp;
-			<button id="resumeBtn" onclick="resumeConn()"><img id="image" width=32 height=32 src="./image/MaterialSymbolsRestartAltRounded.svg"></button>&nbsp;&nbsp;&nbsp;
-			<button id="oprModeBtn" onclick="changeMode()"><img id="imagMode" width=32 height=32 src="./image/IconoirNetworkReverse.svg"></button>&nbsp;&nbsp;&nbsp;
-			<button id="readMeBtn" onclick="sendMessage()"><img id="imagReadme" width=32 height=32 src="./image/OcticonBook.svg"></button>&nbsp;&nbsp;&nbsp;&nbsp;
+			<button id="linkBtn" onclick=""><img id="imageLink" width=32 height=32 src="./image/WpfConnected.svg"></button>&nbsp;&nbsp;&nbsp;
+			<button id="unlinkBtn" onclick=""><img id="imageUnlink" width=32 height=32 src="./image/WpfDisconnected.svg"></button>&nbsp;&nbsp;&nbsp;
+			<button id="xferBtn" onclick=""><img id="imageXfer" width=32 height=32 src="./image/IconParkOutlineCommunication.svg"></button>&nbsp;&nbsp;&nbsp;
+			<button id="resumeBtn" onclick=""><img id="image" width=32 height=32 src="./image/MaterialSymbolsRestartAltRounded.svg"></button>&nbsp;&nbsp;&nbsp;
+			<button id="oprModeBtn" onclick=""><img id="imagMode" width=32 height=32 src="./image/IconoirNetworkReverse.svg"></button>&nbsp;&nbsp;&nbsp;
+			<button id="readMeBtn" onclick=""><img id="imagReadme" width=32 height=32 src="./image/OcticonBook.svg"></button>&nbsp;&nbsp;&nbsp;&nbsp;
 			<button id="bleBtn" onclick="linkBluetoothClick()"><img id="imgBle" width=32 height=32 src="./image/MdiBluetoothOff.svg"></button>
 		</center>
 		
@@ -1548,7 +1548,14 @@
 						setSelImgConn(0);							
 						setSelImgSelected(0);
 						rebuildConn();
-						Set_Node_Info();						
+						Set_Node_Info();
+						arrangeArray[0] = 0;
+						arrangeArray[1] = 0;
+						arrangeArray[2] = 0;
+						arrangeArray[3] = 0;
+						arrangeNodeName();
+						showAllNodeImage();
+						showAllNodeLink();
 					} catch (error) {
 						console.error('Error:', error);
 					}
@@ -1565,8 +1572,15 @@
 				enConnBLE = 1;
 				clrSelImgConn(0);							
 				setSelImgSelected(0);
-				rebuildConn();	
-				Init_Node_Info();			
+				rebuildConn();					
+				Init_Node_Info();
+				arrangeArray[0] = 0;
+				arrangeArray[1] = 0;
+				arrangeArray[2] = 0;
+				arrangeArray[3] = 0;
+				arrangeNodeName();
+				showAllNodeImage();
+				showAllNodeLink();			
 				//document.getElementById('status').innerText = 'Status: Disconnected';
 			}
 
@@ -1614,9 +1628,16 @@
 						break;
 					}				
 				}
-				arrangeNodeName();
-				showAllNodeImage();
-				showAllNodeLink();
+
+				// check if node is connected
+				for(i = 0; i < 4; i++) {
+					if(arrangeArray[i] != 0) {
+						arrangeNodeName();
+						showAllNodeImage();
+						showAllNodeLink();
+						break;
+					}					
+				}
 				
 				//const decoder = new TextDecoder('utf-8');
 				//const message = decoder.decode(value);
