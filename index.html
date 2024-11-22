@@ -107,8 +107,8 @@
 		<label id="test4"></label>
 		
 		<center>			
-			<button id="linkBtn" onclick="linkAll()"><img id="imageLink" width=32 height=32 src="./image/WpfConnected.svg"></button>&nbsp;&nbsp;&nbsp;
-			<button id="unlinkBtn" onclick="unlinkAll()"><img id="imageUnlink" width=32 height=32 src="./image/WpfDisconnected.svg"></button>&nbsp;&nbsp;&nbsp;
+			<button id="linkBtn" onclick="showOneNodeImg()"><img id="imageLink" width=32 height=32 src="./image/WpfConnected.svg"></button>&nbsp;&nbsp;&nbsp;
+			<button id="unlinkBtn" onclick="drawImgThin(2)"><img id="imageUnlink" width=32 height=32 src="./image/WpfDisconnected.svg"></button>&nbsp;&nbsp;&nbsp;
 			<button id="xferBtn" onclick="Init_Node_Info()"><img id="imageXfer" width=32 height=32 src="./image/IconParkOutlineCommunication.svg"></button>&nbsp;&nbsp;&nbsp;
 			<button id="resumeBtn" onclick="resumeConn()"><img id="image" width=32 height=32 src="./image/MaterialSymbolsRestartAltRounded.svg"></button>&nbsp;&nbsp;&nbsp;
 			<button id="oprModeBtn" onclick="changeMode()"><img id="imagMode" width=32 height=32 src="./image/IconoirNetworkReverse.svg"></button>&nbsp;&nbsp;&nbsp;
@@ -151,7 +151,17 @@
 				drt5json;
 		
 			var	enConnBLE = 1,
+				disconnCmd = 0,
 				connStatus = 0;
+
+			// arrangeArray[0] = node name of LBText2P.text
+			// arrangeArray[1] = node name of Node1TextP.text
+			// arrangeArray[2] = node name of Node2TextP.text
+			// arrangeArray[3] = node name of Node3TextP.text
+			// content: 0: cFAN_NODE_1, 1: cFAN_NODE_2
+			//			2: cFAN_NODE_3, 3: cFAN_NODE_4
+			let arrangeArray = [0,0,0,0];
+			
 			const connDeviceName = "cFAN_ROOT";
 
 			/*** DEFAULT information for cFAN ***/
@@ -373,15 +383,23 @@
 				N3LeftP  	= {x: drt5p.x, 			   y: (drt5p.y+drt5p.h/2)},
 				
 				// image text
+				node0Name = " ",
+				node1Name = "cFAN_NODE_1",
+				node2Name = "cFAN_NODE_2",
+				node3Name = "cFAN_NODE_3",
+				node4Name = "cFAN_NODE_4",
+
 				imgTextFont = "11pt NSimSun",
 				gtwText    = "APP",
 				RootText1  = "ROOT",
 				RootText2  = "cFAN_ROOT",
-				LBText1    = "Local Base",
-				LBText2    = "cFAN_LB",
-				Node1Text  = "cFAN_NODE_1",
-				Node2Text  = "cFAN_NODE_2",
-				Node3Text  = "cFAN_NODE_3",
+				LBText1    = " ",					//"Local Base",
+				LBText2    = node1Name,				//"cFAN_LB",
+				Node1Text  = node2Name,				//"cFAN_NODE_1",
+				Node2Text  = node3Name,				//"cFAN_NODE_2",
+				Node3Text  = node4Name,				//"cFAN_NODE_3",
+
+				// node name text index				
 				
 				// image text position
 				gtwTextP    = {text: gtwText,    x: gtwp.x-15,  y: gtwp.y-7},
@@ -590,6 +608,124 @@
 				canvas.addEventListener("click", check);				
 			}							
 
+			// get node name
+			function getNodeName(index) {
+				switch (index) {
+					case 0:
+						return node0Name;
+						break;
+					case 1:
+						return node1Name;
+						break;
+					case 2:
+						return node2Name;
+						break;
+					case 3:
+						return node3Name;
+						break;
+					case 4:
+						return node4Name;
+						break;					
+				}
+			}
+
+			// set node name
+			// namePos: position that renamed
+			//			1: LBText2, 2: Node1Text, 3: Node2Text, 4: Node3Text
+			// newNameIndex: index of new name
+			//				0: blank
+			//				1: cFAN_NODE_1, 2: cFAN_NODE_2
+			//				3: cFAN_NODE_3, 4: cFAN_NODE_4
+			function renameNodeName(namePos, newNameIndex) {
+				switch (namePos) {
+					case 0:
+						LBText2P.text = getNodeName(newNameIndex);
+						break;
+					case 1:
+						Node1TextP.text = getNodeName(newNameIndex);
+						break;
+					case 2:
+						Node2TextP.text = getNodeName(newNameIndex);
+						break;
+					case 3:
+						Node3TextP.text = getNodeName(newNameIndex);
+						break;
+					default:
+						break;					
+				}
+				redrawImgLine();
+			}
+
+			// arrange node
+			// input: arrangeArray[0] = node name of LBText2P.text
+			//		  arrangeArray[1] = node name of Node1TextP.text
+			//		  arrangeArray[2] = node name of Node2TextP.text
+			//		  arrangeArray[3] = node name of Node3TextP.text
+			function arrangeNodeName() {
+				renameNodeName(0,arrangeArray[0]);
+				renameNodeName(1,arrangeArray[1]);
+				renameNodeName(2,arrangeArray[2]);
+				renameNodeName(3,arrangeArray[3]);
+			}			
+
+			// show one node image
+			// showPos: position
+			//			0: Gateway, 1: ROOT
+			//			2: LB(node1), 3: Node1(node2), 4: Node2(node3), 5: Node3(node4)
+			// showMode: visible/invisible
+			//			0: invisible, 1~4: visible
+			function showOneNodeImg(showPos, showMode) {
+				if(showMode == 0) {
+					drawImgBlank(showPos);
+				}
+				else {
+					drawImgThick(showPos);
+				}
+			}
+
+			// show all node image			
+			// Input: arrangeArray[0] = node1 position
+			//		  arrangeArray[1] = node2 position
+			//		  arrangeArray[2] = node3 position
+			//		  arrangeArray[3] = node4 position
+			//		content: 0=invisible, 1~4=visible
+			function showAllNodeImage() {
+				showOneNodeImg(2,arrangeArray[0]);
+				showOneNodeImg(3,arrangeArray[1]);
+				showOneNodeImg(4,arrangeArray[2]);
+				showOneNodeImg(5,arrangeArray[3]);
+			}
+
+			// show one node link			
+			//	showPos: 0=unlink
+			//			 1=link ROOT-NODE1, 2=link NODE1-NODE2
+			//			 3=link NODE2-NODE3, 4=link NODE4-NODE4
+			//	visible: 0=invisible, 1=visible
+			function showOneNodeLink(showPos, visible) {
+				if(visible == 0) {
+					unlinkLine(showPos);
+				}
+				else {
+					linkLine(showPos);
+				}
+			}
+
+			// show all node link			
+			// Input: arrangeArray[0] = node1 position
+			//		  arrangeArray[1] = node2 position
+			//		  arrangeArray[2] = node3 position
+			//		  arrangeArray[3] = node4 position
+			//		content: 0=invisible, 1~4=visible
+			//	content: 0=unlink
+			//			 1=link ROOT-NODE1, 2=link NODE1-NODE2
+			//			 3=link NODE2-NODE3, 4=link NODE4-NODE4
+			function showAllNodeLink() {
+				showOneNodeLink(1,arrangeArray[0]);
+				showOneNodeLink(2,arrangeArray[1]);
+				showOneNodeLink(3,arrangeArray[2]);
+				showOneNodeLink(4,arrangeArray[3]);
+			}
+
 			function Init_Node_Info() {
 				GW_INFO.DeviceName = cFAN_GW_DFT.DeviceName;
 
@@ -612,6 +748,30 @@
 				NODE3_INFO.DeviceName = cFAN_NODE_3_DFT.DeviceName;
 				NODE3_INFO.DeviceUUID = cFAN_NODE_3_DFT.DeviceUUID;
 				NODE3_INFO.DeviceLoc  = cFAN_NODE_3_DFT.DeviceLoc;
+			}
+
+			function Set_Node_Info() {
+				GW_INFO.DeviceName = cFAN_GW_INFO.DeviceName;
+
+				ROOT_INFO.DeviceName = cFAN_ROOT_INFO.DeviceName;
+				ROOT_INFO.DeviceUUID = cFAN_ROOT_INFO.DeviceUUID;
+				ROOT_INFO.DeviceLoc  = cFAN_ROOT_INFO.DeviceLoc;
+
+				LB_INFO.DeviceName = cFAN_LB_INFO.DeviceName;
+				LB_INFO.DeviceUUID = cFAN_LB_INFO.DeviceUUID;
+				LB_INFO.DeviceLoc  = cFAN_LB_INFO.DeviceLoc;
+
+				NODE1_INFO.DeviceName = cFAN_NODE_1_INFO.DeviceName;
+				NODE1_INFO.DeviceUUID = cFAN_NODE_1_INFO.DeviceUUID;
+				NODE1_INFO.DeviceLoc  = cFAN_NODE_1_INFO.DeviceLoc;
+
+				NODE2_INFO.DeviceName = cFAN_NODE_2_INFO.DeviceName;
+				NODE2_INFO.DeviceUUID = cFAN_NODE_2_INFO.DeviceUUID;
+				NODE2_INFO.DeviceLoc  = cFAN_NODE_2_INFO.DeviceLoc;
+
+				NODE3_INFO.DeviceName = cFAN_NODE_3_INFO.DeviceName;
+				NODE3_INFO.DeviceUUID = cFAN_NODE_3_INFO.DeviceUUID;
+				NODE3_INFO.DeviceLoc  = cFAN_NODE_3_INFO.DeviceLoc;
 			}
 
 			function drawImgThin(imgInx) {
@@ -1333,7 +1493,11 @@
 			img.addEventListener("load", (e) => {										  
 				redrawImgLine();
 			  	changeMode();
-				Init_Node_Info();			  
+				Init_Node_Info();
+				unlinkAll();
+				arrangeNodeName();
+				showAllNodeImage();		  
+				showAllNodeLink();
 			});	
 			
 		</script>
@@ -1361,6 +1525,10 @@
 						imgBle.src="./image/FoundationBluetooth.svg";
 						enConnBLE = 0;						
 						console.log("connected")
+						setSelImgConn(0);							
+						setSelImgSelected(0);
+						rebuildConn();
+						Set_Node_Info();						
 					} catch (error) {
 						console.error('Error:', error);
 					}
@@ -1375,6 +1543,10 @@
 				imgBle.src="./image/MdiBluetoothOff.svg";
 				disconnCmd = 0;
 				enConnBLE = 1;
+				clrSelImgConn(0);							
+				setSelImgSelected(0);
+				rebuildConn();	
+				Init_Node_Info();			
 				//document.getElementById('status').innerText = 'Status: Disconnected';
 			}
 
@@ -1397,19 +1569,38 @@
 
 			function handleCharacteristicValueChanged(event) {
 				const timestamp = formatDatetime(new Date());
-				const value = event.target.value;
-				const decoder = new TextDecoder('utf-8');
-				const message = decoder.decode(value);
-				console.log(message);
+				let value = [];		//event.target.value.getUint8(0);
+				for(i = 0; i < 32; i++) {
+					value[i] = event.target.value.getUint8(i);
+				}
 
-				// update new message from notification of cFAN_ROOT
-				//var msgInx = parseMsgFrom(message);
-				//saveMsg2Info(msgInx);
-				//ROOT_INFO.DeviceLoc = message;
+				// move NTY into arrangeArray
+				for(i = 0; i < 4; i++) {					
+					if(value[i] == 255) {
+						value[i] = 0;
+					}
+					arrangeArray[3-i] = value[i];					
+				}
 
-
-
-
+				// adjust node position
+				for(i = 0; i < 4; i++) {
+					if(arrangeArray[0] == 0) {
+						arrangeArray[0] = arrangeArray[1];
+						arrangeArray[1] = arrangeArray[2];
+						arrangeArray[2] = arrangeArray[3];
+						arrangeArray[3] = 0;						
+					}
+					else {
+						break;
+					}				
+				}
+				arrangeNodeName();
+				showAllNodeImage();
+				showAllNodeLink()
+				
+				//const decoder = new TextDecoder('utf-8');
+				//const message = decoder.decode(value);
+				//console.log(value);
 				
 				if(disconnCmd == 1) {
 					if (device.gatt.connected) {
