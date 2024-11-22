@@ -175,15 +175,15 @@
 									 DeviceUUID: "0000000-0000-0000-0000-000000000000",
 									 DeviceLoc : "DFM-UUU"};
 			
-			const cFAN_NODE_1_DFT = {DeviceName: "cFAN_NODE_1",
+			const cFAN_NODE_1_DFT = {DeviceName: "cFAN_NODE_2",
 									 DeviceUUID: "0000000-0000-0000-0000-000000000000",
 									 DeviceLoc : "DFM-UUU"};
 
-			const cFAN_NODE_2_DFT = {DeviceName: "cFAN_NODE_2",
+			const cFAN_NODE_2_DFT = {DeviceName: "cFAN_NODE_3",
 									 DeviceUUID: "0000000-0000-0000-0000-000000000000",
 									 DeviceLoc : "DFM-UUU"};
 
-			const cFAN_NODE_3_DFT = {DeviceName: "cFAN_NODE_3",
+			const cFAN_NODE_3_DFT = {DeviceName: "cFAN_NODE_4",
 									 DeviceUUID: "0000000-0000-0000-0000-000000000000",
 									 DeviceLoc : "DFM-UUU"};
 
@@ -194,19 +194,19 @@
 									 DeviceUUID : "98007e9c-48d4-4522-93b1-05044c7e756b",
 									 DeviceLoc  : "DFM-7084"};
 			
-			const cFAN_LB_INFO 	   = {DeviceName: "cFAN_LB",
+			const cFAN_LB_INFO 	   = {DeviceName: "cFAN_NODE_1",
 									 DeviceUUID : "155b666f-bb69-42a6-ac5c-bddcc141c8ed",
 									 DeviceLoc  : "NDW-8864"};
 			
-			const cFAN_NODE_1_INFO = {DeviceName: "cFAN_NODE_1",
+			const cFAN_NODE_1_INFO = {DeviceName: "cFAN_NODE_2",
 									 DeviceUUID : "aea1770b-eae4-410d-bb65-8d4b3cabddaa",
 									 DeviceLoc  : "EMG-5760"};
 
-			const cFAN_NODE_2_INFO = {DeviceName: "cFAN_NODE_2",
+			const cFAN_NODE_2_INFO = {DeviceName: "cFAN_NODE_3",
 									 DeviceUUID : "565d421d-5107-4c89-9107-a718f986f63f",
 									 DeviceLoc  : "TMB-7052"};
 
-			const cFAN_NODE_3_INFO = {DeviceName: "cFAN_NODE_3",
+			const cFAN_NODE_3_INFO = {DeviceName: "cFAN_NODE_4",
 									 DeviceUUID : "9a0b9a6b-7c49-4d0e-b610-fab91733eab8",
 									 DeviceLoc  : "SXC-4043"};
 
@@ -480,7 +480,7 @@
 				function check(e) {					
 					var	pos = getPos(e),
 						posAbs = {x: e.clientX-80, y: e.clientY},
-						index = pos2Index(region),							
+						index = pos2Index(region),												
 						linkStatus = getDvcOnlineStatus(index),
 						thickStatus = getImagThickStatus(index);
 						selFlag = getSelImgSelected(index);	
@@ -508,7 +508,7 @@
 					else if(visible && netMode) {	
 						setDivPos(posAbs); 
 						hide();
-						if(!selFlag) {
+					/*	if(!selFlag) {
 							if(linkStatus) {
 								clrSelImgConn(index);								
 							}
@@ -517,9 +517,8 @@
 							}
 							setSelImgSelected(index);
 							rebuildConn();
-							clrSelImgSelected(index);
-							
-						}
+							clrSelImgSelected(index);							
+						} */
 					}
 					else if(visible && !netMode && thickStatus &&
 						pos.x >= region.x && pos.x < region.x + region.w &&
@@ -562,9 +561,30 @@
 					}
 				}
 			  
+				function adjNodeInfoPos(inx) {
+					switch(inx) {
+						case 0:
+							return 0;
+						case 1:
+							return 1;
+						case 2:
+							return 3;
+						case 3:
+							return 2;
+						case 4:
+							return 1;
+						case 5:
+							return 0;
+					}
+				}
+
 				function updateTooltipText(pos) {
 					var text;
-					var index = pos2Index(pos);				
+					var index = pos2Index(pos);
+					if(index > 1) {
+						index = (arrangeArray[index-2]+1);
+					}
+					
 					switch(index) {
 						case 0:
 							text = "Device Name:" + GW_INFO.DeviceName;
@@ -1596,7 +1616,7 @@
 				}
 				arrangeNodeName();
 				showAllNodeImage();
-				showAllNodeLink()
+				showAllNodeLink();
 				
 				//const decoder = new TextDecoder('utf-8');
 				//const message = decoder.decode(value);
