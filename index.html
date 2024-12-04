@@ -144,6 +144,11 @@
 
 			const messageStore = {};
 
+			var TempDcmlN1 = 24.2,
+				TempDcmlN2 = 25.6,
+				HumiDcmlN1 = 75.1,
+				HumiDcmlN2 = 80.3;
+
 			var drt1json,
 				drt2json,
 				drt3json,
@@ -160,7 +165,7 @@
 			// arrangeArray[3] = node name of Node3TextP.text
 			// content: 0: cFAN_NODE_1, 1: cFAN_NODE_2
 			//			2: cFAN_NODE_3, 3: cFAN_NODE_4
-			let arrangeArray = [0,0,0,0];
+			let arrangeArray = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 			
 			const connDeviceName = "cFAN_ROOT";
 
@@ -231,25 +236,27 @@
 			var LB_INFO = {
 								DeviceName : "",
 								DeviceUUID : "",
-								DeviceLoc  : ""
+								DeviceLoc  : "",
+								THMeter	   : ""
 							};
 
 			var NODE1_INFO = {
 								DeviceName : "",
 								DeviceUUID : "",
-								DeviceLoc  : ""
+								DeviceLoc  : "",
+								THMeter	   : ""
 							};	
 			
 			var NODE2_INFO = {
 								DeviceName : "",
 								DeviceUUID : "",
-								DeviceLoc  : ""
+								DeviceLoc  : "",								
 							};
 
 			var NODE3_INFO = {
 								DeviceName : "",
 								DeviceUUID : "",
-								DeviceLoc  : ""
+								DeviceLoc  : "",								
 							};
 
 			// link status of devices
@@ -390,14 +397,15 @@
 				node4Name = "cFAN_NODE_4",
 
 				imgTextFont = "11pt NSimSun",
-				gtwText    = "APP",
-				RootText1  = "ROOT",
-				RootText2  = "cFAN_ROOT",
-				LBText1    = " ",					//"Local Base",
-				LBText2    = node1Name,				//"cFAN_LB",
-				Node1Text  = node2Name,				//"cFAN_NODE_1",
-				Node2Text  = node3Name,				//"cFAN_NODE_2",
-				Node3Text  = node4Name,				//"cFAN_NODE_3",
+				gtwText     = "APP",
+				RootText1   = "ROOT",
+				RootText2   = "cFAN_ROOT",
+				LBText1     = " ",						//"Local Base",
+				LBText2     = node1Name,				//"cFAN_LB",				
+				Node1Text   = node2Name,				//"cFAN_NODE_1",
+				Node2Text   = node3Name,				//"cFAN_NODE_2",
+				Node3Text   = node4Name,				//"cFAN_NODE_3",
+				TempHumiVal = "",				
 
 				// node name text index				
 				
@@ -405,11 +413,17 @@
 				gtwTextP    = {text: gtwText,    x: gtwp.x-15,  y: gtwp.y-7},
 				RootText1P  = {text: RootText1,  x: drt1p.x+38, y: drt1p.y-18},
 				RootText2P  = {text: RootText2,  x: drt1p.x+38, y: drt1p.y-1},
-				LBText1P    = {text: LBText1, 	 x: drt2p.x+38, y: drt2p.y-18},
-				LBText2P    = {text: LBText2, 	 x: drt2p.x+38, y: drt2p.y-1},
+				LBText1P    = {text: LBText1, 	 x: drt2p.x+38, y: drt2p.y-26},
+				LBText2P    = {text: LBText2, 	 x: drt2p.x+38, y: drt2p.y-15},				
 				Node1TextP  = {text: Node1Text,  x: drt3p.x-20,  y: drt3p.y+66},
 				Node2TextP  = {text: Node2Text,  x: drt4p.x-20,  y: drt4p.y+66},
 				Node3TextP  = {text: Node3Text,  x: drt5p.x-20,  y: drt3p.y+66},
+				
+				// Temperature/Humidity value position				
+				TempHumiN1P  = {text: TempHumiVal,  x: drt2p.x+38, y: drt2p.y+2},		
+				TempHumiN2P  = {text: TempHumiVal,  x: drt3p.x-20,  y: drt3p.y+83},		
+				TempHumiN3P  = {text: TempHumiVal,  x: drt4p.x-20,  y: drt4p.y+83},		
+				TempHumiN4P  = {text: TempHumiVal,  x: drt5p.x-20,  y: drt3p.y+83},		
 								
 				// initial image tooltip text
 				gtwtext  = "Device Name: APP",
@@ -576,15 +590,33 @@
 						case 5:
 							return 0;
 					}
-				}
+				}						
 
 				function updateTooltipText(pos) {
 					var text;
 					var index = pos2Index(pos);
-					if(index > 1) {
-						index = (arrangeArray[index-2]+1);
+					//if(index > 1) {
+					//	index = (arrangeArray[index-2]+1);
+					//}
+					switch(index) {
+						case 0:
+							break;
+						case 1:
+							break;
+						case 2:
+							index = arrangeArray[4]+1;
+							break;
+						case 3:
+							index = arrangeArray[9]+1;
+							break;
+						case 4:
+							index = arrangeArray[14]+1;
+							break;
+						case 5:
+							index = arrangeArray[19]+1;
+							break;
 					}
-					
+
 					switch(index) {
 						case 0:
 							text = "Device Name:" + GW_INFO.DeviceName;
@@ -596,28 +628,30 @@
 								"Device Location:<br>" + ROOT_INFO.DeviceLoc;
 							return text;							
 
-						case 2:
+						case 2:							
 							text = "Device Name:"      + LB_INFO.DeviceName + "<br>" +
 								"Device UUID:<br>"     + LB_INFO.DeviceUUID + "<br>" +
-								"Device Location:<br>" + LB_INFO.DeviceLoc;
+								"Device Location:<br>" + LB_INFO.DeviceLoc	+ "<br>" +
+								"Thermohygrometer:<br>"+ LB_INFO.THMeter;
 							return text;
 
-						case 3:
+						case 3:							
 							text = "Device Name:"      + NODE1_INFO.DeviceName + "<br>" +
 								"Device UUID:<br>"     + NODE1_INFO.DeviceUUID + "<br>" +
-								"Device Location:<br>" + NODE1_INFO.DeviceLoc;
+								"Device Location:<br>" + NODE1_INFO.DeviceLoc  + "<br>" +
+								"Thermohygrometer:<br>"+ NODE1_INFO.THMeter;
 							return text;
 
 						case 4:
 							text = "Device Name:"      + NODE2_INFO.DeviceName + "<br>" +
 								"Device UUID:<br>"     + NODE2_INFO.DeviceUUID + "<br>" +
-								"Device Location:<br>" + NODE2_INFO.DeviceLoc;
+								"Device Location:<br>" + NODE2_INFO.DeviceLoc;								
 							return text;
 
 						case 5:
 							text = "Device Name:"      + NODE3_INFO.DeviceName + "<br>" +
 								"Device UUID:<br>"     + NODE3_INFO.DeviceUUID + "<br>" +
-								"Device Location:<br>" + NODE3_INFO.DeviceLoc;	
+								"Device Location:<br>" + NODE3_INFO.DeviceLoc;								
 							return text;
 					}
 				}
@@ -677,15 +711,15 @@
 			}
 
 			// arrange node
-			// input: arrangeArray[0] = node name of LBText2P.text
-			//		  arrangeArray[1] = node name of Node1TextP.text
-			//		  arrangeArray[2] = node name of Node2TextP.text
-			//		  arrangeArray[3] = node name of Node3TextP.text
+			// input: arrangeArray[4] = node name of LBText2P.text
+			//		  arrangeArray[9] = node name of Node1TextP.text
+			//		  arrangeArray[14] = node name of Node2TextP.text
+			//		  arrangeArray[19] = node name of Node3TextP.text
 			function arrangeNodeName() {
-				renameNodeName(0,arrangeArray[0]);
-				renameNodeName(1,arrangeArray[1]);
-				renameNodeName(2,arrangeArray[2]);
-				renameNodeName(3,arrangeArray[3]);
+				renameNodeName(0,arrangeArray[4]);
+				renameNodeName(1,arrangeArray[9]);
+				renameNodeName(2,arrangeArray[14]);
+				renameNodeName(3,arrangeArray[19]);
 			}			
 
 			// show one node image
@@ -704,16 +738,16 @@
 			}
 
 			// show all node image			
-			// Input: arrangeArray[0] = node1 position
-			//		  arrangeArray[1] = node2 position
-			//		  arrangeArray[2] = node3 position
-			//		  arrangeArray[3] = node4 position
+			// Input: arrangeArray[4] = node1 position
+			//		  arrangeArray[9] = node2 position
+			//		  arrangeArray[14] = node3 position
+			//		  arrangeArray[19] = node4 position
 			//		content: 0=invisible, 1~4=visible
 			function showAllNodeImage() {
-				showOneNodeImg(2,arrangeArray[0]);
-				showOneNodeImg(3,arrangeArray[1]);
-				showOneNodeImg(4,arrangeArray[2]);
-				showOneNodeImg(5,arrangeArray[3]);
+				showOneNodeImg(2,arrangeArray[4]);
+				showOneNodeImg(3,arrangeArray[9]);
+				showOneNodeImg(4,arrangeArray[14]);
+				showOneNodeImg(5,arrangeArray[19]);
 			}
 
 			// show one node link			
@@ -731,19 +765,19 @@
 			}
 
 			// show all node link			
-			// Input: arrangeArray[0] = node1 position
-			//		  arrangeArray[1] = node2 position
-			//		  arrangeArray[2] = node3 position
-			//		  arrangeArray[3] = node4 position
+			// Input: arrangeArray[4] = node1 position
+			//		  arrangeArray[9] = node2 position
+			//		  arrangeArray[14] = node3 position
+			//		  arrangeArray[19] = node4 position
 			//		content: 0=invisible, 1~4=visible
 			//	content: 0=unlink
 			//			 1=link ROOT-NODE1, 2=link NODE1-NODE2
 			//			 3=link NODE2-NODE3, 4=link NODE4-NODE4
 			function showAllNodeLink() {
-				showOneNodeLink(1,arrangeArray[0]);
-				showOneNodeLink(2,arrangeArray[1]);
-				showOneNodeLink(3,arrangeArray[2]);
-				showOneNodeLink(4,arrangeArray[3]);
+				showOneNodeLink(1,arrangeArray[4]);
+				showOneNodeLink(2,arrangeArray[9]);
+				showOneNodeLink(3,arrangeArray[14]);
+				showOneNodeLink(4,arrangeArray[19]);
 			}
 
 			function Init_Node_Info() {
@@ -1427,12 +1461,51 @@
 				test3.innerHTML = obj.DeviceLoc;
 			}
 			
+			function showTempHumi() {
+				if(LBText2P.text == node1Name) {
+					TempHumiN1P.text = TempDcmlN1 + "  " + HumiDcmlN1 + "%";
+					putText(TempHumiN1P,imgTextFont);
+				}
+				else if(LBText2P.text == node2Name) {
+					TempHumiN1P.text = TempDcmlN2 + "  " + HumiDcmlN2 + "%"
+					putText(TempHumiN1P,imgTextFont);
+				}
+
+				if(Node1TextP.text == node1Name) {
+					TempHumiN2P.text = TempDcmlN1 + "  " + HumiDcmlN1 + "%";
+					putText(TempHumiN2P,imgTextFont);
+				}
+				else if(Node1TextP.text == node2Name) {
+					TempHumiN2P.text = TempDcmlN2 + "  " + HumiDcmlN2 + "%";
+					putText(TempHumiN2P,imgTextFont);
+				}
+
+				if(Node2TextP.text == node1Name) {
+					TempHumiN3P.text = TempDcmlN1 + "  " + HumiDcmlN1 + "%";
+					putText(TempHumiN3P,imgTextFont);
+				}
+				else if(Node2TextP.text == node2Name) {
+					TempHumiN3P.text = TempDcmlN2 + "  " + HumiDcmlN2 + "%";
+					putText(TempHumiN3P,imgTextFont);
+				}
+
+				if(Node3TextP.text == node1Name) {
+					TempHumiN4P.text = TempDcmlN1 + "  " + HumiDcmlN1 + "%";
+					putText(TempHumiN4P,imgTextFont);
+				}
+				else if(Node3TextP.text == node2Name) {
+					TempHumiN4P.text = TempDcmlN2 + "  " + HumiDcmlN2 + "%";
+					putText(TempHumiN4P,imgTextFont);
+				}
+			}
+
 			function resumeConn() {
 				redrawImgLine();
 				uploadCnt = 0;
 				downloadCnt = 0;
 				updnMode = 1;
 			}
+
 			function changeMode() {
 				var modeBtnImg = document.getElementById("imagMode");
 					//xferBtnImg = document.getElementById("imageXfer");
@@ -1475,6 +1548,44 @@
 				updnMode = 1;
 			}
 			
+			function hex2B_Decml(hexH, hexL) {
+					var d1 = parseInt(hexH / 16) * 4096;
+					var d2 = (hexH & 0x0F) * 256;
+					var d3 = parseInt(hexL / 16) * 16;
+					var d4 = (hexL & 0x0F);
+					return (d1+d2+d3+d4);
+			}
+
+			function CalTemperature(tempH, tempL) {					
+				var tempDcml = hex2B_Decml(tempH,tempL);
+				tempDcml = 175*tempDcml/65535.0- 45.0;
+				return tempDcml;
+			}				
+
+			function CalHumidity(humiH, humiL) {					
+				var humiDcml = hex2B_Decml(humiH,humiL);
+				humiDcml = 100.0*tempDcml/65535.0;
+				return tempDcml;
+			}
+
+			function getTempHumiDcml() {
+				for(var i = -1; i < 15; i=i+5) {
+					if(arrangeArray[i+5] == 1) {
+						TempDcmlN1 = CalTemperature(arrangeArray[i+5-1], arrangeArray[i+5-2]);
+						HumiDcmlN1 = CalTemperature(arrangeArray[i+5-3], arrangeArray[i+5-4]);
+						TempDcmlN1 = TempDcmlN1.toFixed(1);
+						HumiDcmlN1 = HumiDcmlN1.toFixed(1);
+					}
+
+					if(arrangeArray[i+5] == 2) {
+						TempDcmlN2 = CalTemperature(arrangeArray[i+5-1], arrangeArray[i+5-2]);
+						HumiDcmlN2 = CalTemperature(arrangeArray[i+5-3], arrangeArray[i+5-4]);
+						TempDcmlN2 = TempDcmlN2.toFixed(1);
+						HumiDcmlN2 = HumiDcmlN2.toFixed(1);
+					}
+				}
+			}		
+
 			function getRoutingMap() {
 				fetch("http://118.163.52.188:8080/api/routing-map", {
 					method: 'GET'
@@ -1574,10 +1685,10 @@
 				setSelImgSelected(0);
 				rebuildConn();					
 				Init_Node_Info();
-				arrangeArray[0] = 0;
-				arrangeArray[1] = 0;
-				arrangeArray[2] = 0;
-				arrangeArray[3] = 0;
+				arrangeArray[4] = 0;
+				arrangeArray[9] = 0;
+				arrangeArray[14] = 0;
+				arrangeArray[19] = 0;
 				arrangeNodeName();
 				showAllNodeImage();
 				showAllNodeLink();			
@@ -1604,35 +1715,115 @@
 			function handleCharacteristicValueChanged(event) {
 				const timestamp = formatDatetime(new Date());
 				let value = [];		//event.target.value.getUint8(0);
-				for(i = 0; i < 20; i++) {
+				for(i = 0; i < 25; i++) {
 					value[i] = event.target.value.getUint8(i);
 				}
 
+				// remove empty node data
+				if(value[0] > 4) {
+					value[0] = 0;
+					value[1] = 0;
+					value[2] = 0;
+					value[3] = 0;
+					value[4] = 0;
+				}
+				if(value[5] > 4) {
+					value[5] = 0;
+					value[6] = 0;
+					value[7] = 0;
+					value[8] = 0;
+					value[9] = 0;
+				}
+				if(value[10] > 4) {
+					value[10] = 0;
+					value[11] = 0;
+					value[12] = 0;
+					value[13] = 0;
+					value[14] = 0;
+				}
+				if(value[15] > 4) {
+					value[15] = 0;
+					value[16] = 0;
+					value[17] = 0;
+					value[18] = 0;
+					value[19] = 0;
+				}
+				if(value[20] > 4) {
+					value[20] = 0;
+					value[21] = 0;
+					value[22] = 0;
+					value[23] = 0;
+					value[24] = 0;
+				}
+
 				// move NTY into arrangeArray
-				for(i = 0; i < 5; i++) {					
-					if(value[i] == 255) {
-						value[i] = 0;
-					}
-					arrangeArray[3-i] = value[i];					
+				for(i = 0; i < 25; i++) {					
+					//if(value[i] == 255) {
+					//	value[i] = 0;
+					//}
+					arrangeArray[24-i] = value[i];					
 				}
 
 				// adjust node position
-				for(i = 0; i < 4; i++) {
+				for(i = 0; i < 25; i++) {
 					if(arrangeArray[0] == 0) {
 						arrangeArray[0] = arrangeArray[1];
 						arrangeArray[1] = arrangeArray[2];
 						arrangeArray[2] = arrangeArray[3];
-						arrangeArray[3] = 0;						
+						arrangeArray[3] = arrangeArray[4];
+						arrangeArray[4] = arrangeArray[5];
+						arrangeArray[5] = arrangeArray[6];
+						arrangeArray[6] = arrangeArray[7];
+						arrangeArray[7] = arrangeArray[8];
+						arrangeArray[8] = arrangeArray[9];
+						arrangeArray[9] = arrangeArray[10];
+						arrangeArray[10] = arrangeArray[11];
+						arrangeArray[11] = arrangeArray[12];
+						arrangeArray[12] = arrangeArray[13];
+						arrangeArray[13] = arrangeArray[14];
+						arrangeArray[14] = arrangeArray[15];
+						arrangeArray[15] = arrangeArray[16];
+						arrangeArray[16] = arrangeArray[17];
+						arrangeArray[17] = arrangeArray[18];
+						arrangeArray[18] = arrangeArray[19];
+						arrangeArray[19] = arrangeArray[20];
+						arrangeArray[20] = arrangeArray[21];
+						arrangeArray[21] = arrangeArray[22];
+						arrangeArray[22] = arrangeArray[23];
+						arrangeArray[23] = arrangeArray[24];			
+						arrangeArray[24] = 0									
 					}
 					else {
 						break;
 					}				
 				}
 
+				TempDcmlN1 = 0;
+				TempDcmlN2 = 0;
+				HumiDcmlN1 = 0;
+				HumiDcmlN2 = 0;
+
+				getTempHumiDcml();
+				LB_INFO.THMeter = TempDcmlN1 + "   " + HumiDcmlN1 + "%";
+				NODE1_INFO.THMeter = TempDcmlN2 + "   " + HumiDcmlN2 + "%";
+				/*if(TempDcmlN1 != 0) {
+					test1.innerHTML = "1: " + LB_INFO.THMeter;
+				}
+				else {
+					test1.innerHTML = "";
+				}	
+				
+				if(TempDcmlN2 != 0) {
+					test2.innerHTML = " --- 2: " + NODE1_INFO.THMeter;
+				}
+				else {
+					test2.innerHTML = "";
+				}	*/							
+					
 				arrangeNodeName();
 				showAllNodeImage();
 				showAllNodeLink();
-				
+				showTempHumi();
 				//const decoder = new TextDecoder('utf-8');
 				//const message = decoder.decode(value);
 				//console.log(value);
